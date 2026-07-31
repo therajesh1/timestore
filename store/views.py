@@ -246,16 +246,25 @@ def brand_manage_list(request):
     category = request.GET.get("category", "")
     if category:
         brands = brands.filter(products__category=category).distinct()
-    if request.method == "POST":
+    if request.method == "POST" and "add_subbrand" in request.POST:
+        form = BrandForm()
+        subbrand_form = SubBrandForm(request.POST)
+        if subbrand_form.is_valid():
+            sub_brand = subbrand_form.save()
+            messages.success(request, f"Sub-brand “{sub_brand.name}” added to {sub_brand.brand.name}.")
+            return redirect("brand_manage_list")
+    elif request.method == "POST":
         form = BrandForm(request.POST, request.FILES)
+        subbrand_form = SubBrandForm()
         if form.is_valid():
             brand = form.save()
             messages.success(request, f"Brand “{brand.name}” added.")
             return redirect("brand_manage_list")
     else:
         form = BrandForm()
+        subbrand_form = SubBrandForm()
     return render(request, "store/manage_brands.html", {
-        "brands": brands, "form": form,
+        "brands": brands, "form": form, "subbrand_form": subbrand_form,
         "categories": Product.Category.choices, "selected_category": category,
     })
 
