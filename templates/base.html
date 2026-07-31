@@ -68,12 +68,12 @@
       </div>
     </div>
 
+    {% if request.path == '/' %}
     <div class="brand-strip">
       <div class="brand-strip-row">
         {% for cat in nav_categories %}
-          <a href="{% if cat.shows_brands %}{% url 'product_list' %}{% else %}#{% endif %}"
-             class="brand-chip category-chip"
-             data-shows-brands="{{ cat.shows_brands|yesno:'true,false' }}">
+          <a href="{% url 'product_list' %}?category={{ cat.name|urlencode }}"
+             class="brand-chip category-chip">
             <span class="brand-badge">
               <img src="{% static 'images/icons/' %}{{ cat.icon }}.png" alt="{{ cat.name }}" class="brand-badge-img" />
             </span>
@@ -82,8 +82,10 @@
         {% endfor %}
       </div>
     </div>
+    {% endif %}
 
-    <div class="brand-strip" id="brand-substrip">
+    {% if category == 'Wrist Watch' %}
+    <div class="brand-strip" id="brand-substrip" style="display: block;">
       <div class="brand-strip-row">
         {% for brand in nav_brands %}
           <a href="{% url 'product_list' %}?brand={{ brand.slug }}" class="brand-chip">
@@ -105,42 +107,34 @@
         {% endfor %}
       </div>
     </div>
+    {% endif %}
   </nav>
 
   <script>
     document.addEventListener("DOMContentLoaded", function () {
-      var chips = document.querySelectorAll(".category-chip");
-      var subStrip = document.getElementById("brand-substrip");
       var nav = document.querySelector(".nav");
       var main = document.querySelector("main");
 
       function syncMainPadding() {
-        main.style.paddingTop = nav.offsetHeight + "px";
+        if (main && nav) {
+          main.style.paddingTop = nav.offsetHeight + "px";
+        }
       }
 
-      subStrip.style.display = "none";
       syncMainPadding();
-
-      chips.forEach(function (chip) {
-        chip.addEventListener("click", function (e) {
-          e.preventDefault();
-          var showsBrands = chip.getAttribute("data-shows-brands") === "true";
-          chips.forEach(function (c) { c.classList.remove("active"); });
-          chip.classList.add("active");
-          subStrip.style.display = showsBrands ? "" : "none";
-          syncMainPadding();
-        });
-      });
 
       var navToggle = document.getElementById("navToggle");
       var navMenu = document.getElementById("navMenu");
-      navToggle.addEventListener("click", function () {
-        var isOpen = navMenu.classList.toggle("open");
-        navToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
-        syncMainPadding();
-      });
+      if (navToggle && navMenu) {
+        navToggle.addEventListener("click", function () {
+          var isOpen = navMenu.classList.toggle("open");
+          navToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+          syncMainPadding();
+        });
+      }
 
       window.addEventListener("resize", syncMainPadding);
+      setTimeout(syncMainPadding, 50);
     });
   </script>
 
