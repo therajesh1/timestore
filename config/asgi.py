@@ -20,9 +20,9 @@ try:
     print("Running database migrations...")
     call_command('migrate', interactive=False)
     print("Seeding database (brands)...")
-    call_command('seed_brands', interactive=False)
+    call_command('seed_brands')
     print("Seeding database (products)...")
-    call_command('seed_products', interactive=False)
+    call_command('seed_products')
     print("Database setup completed successfully.")
 except Exception as e:
     print(f"Error running database setup during ASGI initialization: {e}")
