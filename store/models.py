@@ -64,7 +64,6 @@ class Product(models.Model):
     # Product Master
     ean_code = models.CharField("EAN code", max_length=13, blank=True, default="")
     name = models.CharField("Product name", max_length=120)
-    tagline = models.CharField(max_length=160)
     ref = models.CharField("Product ID / ref. code", max_length=20, unique=True)
     model_number = models.CharField("Model", max_length=50, blank=True, default="")
     tts_model = models.CharField("TTS model", max_length=50, blank=True, default="")
@@ -74,6 +73,15 @@ class Product(models.Model):
     product_type = models.CharField("Type", max_length=50, blank=True, default="")
     colour = models.CharField(max_length=30, blank=True, default="")
     collection = models.CharField(max_length=50, blank=True, default="")
+
+    # Specifications
+    warranty_period = models.CharField("Warranty Period", max_length=120, blank=True, default="")
+    glass_material = models.CharField("Glass Material", max_length=120, blank=True, default="")
+    strap_material = models.CharField("Strap Material", max_length=120, blank=True, default="")
+    movement = models.CharField("Movement", max_length=120, blank=True, default="")
+    strap_color = models.CharField("Strap Color", max_length=120, blank=True, default="")
+    dial_color = models.CharField("Dial Color", max_length=120, blank=True, default="")
+    case_material = models.CharField("Case Material", max_length=120, blank=True, default="")
 
     # Pricing & tax
     mrp = models.DecimalField("MRP", max_digits=12, decimal_places=2, default=0, help_text="Maximum retail price, in INR")

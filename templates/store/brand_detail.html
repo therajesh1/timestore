@@ -74,10 +74,17 @@
         </ul>
       </div>
     {% endif %}
-    <form method="post" style="display:flex; gap:1rem; align-items:flex-start;">
+    <form method="post" style="display:flex; flex-direction:column; gap:1.25rem; align-items:stretch; max-width:400px;">
       {% csrf_token %}
-      <div class="form-field" style="flex:1; margin-bottom:0;">{{ subbrand_form.name }}</div>
-      <button type="submit" class="btn btn-outline">+ Add Sub-brand</button>
+      <div class="form-field" style="margin-bottom:0;">
+        <label for="id_brand">Add to Brand</label>
+        {{ subbrand_form.brand }}
+      </div>
+      <div class="form-field" style="margin-bottom:0;">
+        <label for="id_name">Sub-brand Name</label>
+        {{ subbrand_form.name }}
+      </div>
+      <button type="submit" class="btn btn-outline" style="align-self:flex-start;">+ Add Sub-brand</button>
     </form>
   </div>
 

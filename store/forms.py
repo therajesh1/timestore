@@ -22,10 +22,12 @@ class ProductForm(forms.ModelForm):
         model = Product
         fields = [
             "ref", "ean_code", "name", "model_number", "tts_model",
-            "brand", "sub_brand", "category", "product_type", "colour", "collection", "tagline",
+            "brand", "sub_brand", "category", "product_type", "colour", "collection",
             "image", "image_url",
             "mrp", "price", "gst_percent", "hsn_code", "min_qty",
             "stock", "featured", "description", "remark",
+            "warranty_period", "glass_material", "strap_material",
+            "movement", "strap_color", "dial_color", "case_material",
         ]
         widgets = {
             "description": forms.Textarea(attrs={"rows": 3}),
@@ -42,7 +44,7 @@ class BrandForm(forms.ModelForm):
 class SubBrandForm(forms.ModelForm):
     class Meta:
         model = SubBrand
-        fields = ["name"]
+        fields = ["brand", "name"]
 
 
 class OrderStatusForm(forms.ModelForm):

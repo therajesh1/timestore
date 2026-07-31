@@ -7,7 +7,7 @@
       <img src="{{ product.display_image }}" alt="{{ product.name }}" style="width:100%; height:100%; object-fit:cover;" />
     </div>
     <div>
-      <p class="mono" style="font-size:9px; letter-spacing:0.3em; text-transform:uppercase; color:var(--muted-foreground);">{{ product.ref }} · {{ product.tagline }}</p>
+      <p class="mono" style="font-size:9px; letter-spacing:0.3em; text-transform:uppercase; color:var(--muted-foreground);">{{ product.brand.name|default:"Atelier" }} · {{ product.ref }}</p>
       <h1 style="font-size: 2.75rem; margin: 0.75rem 0 1.25rem;">{{ product.name }}</h1>
       <p class="mono" style="font-size:1.5rem; color: var(--accent); margin-bottom: 1.5rem;">{{ product.formatted_price }}</p>
       {% if product.description %}
@@ -27,6 +27,62 @@
       {% else %}
         <p class="mono" style="color:#B3261E; text-transform:uppercase; letter-spacing:0.1em; font-size:0.85rem;">Out of stock</p>
       {% endif %}
+
+      <div style="margin-top: 2.5rem; border-top: 1px solid var(--border); padding-top: 1.5rem;">
+        <p class="mono" style="font-size:0.75rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent); margin-bottom:1rem;">Specifications</p>
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem; line-height: 2;">
+          <tbody>
+            {% if product.brand %}
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+              <td style="color: var(--muted-foreground); padding: 0.5rem 0;">Brand</td>
+              <td style="text-align: right; font-weight: 500;">{{ product.brand.name }}</td>
+            </tr>
+            {% endif %}
+            {% if product.warranty_period %}
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+              <td style="color: var(--muted-foreground); padding: 0.5rem 0;">Warranty Period</td>
+              <td style="text-align: right; font-weight: 500;">{{ product.warranty_period }}</td>
+            </tr>
+            {% endif %}
+            {% if product.glass_material %}
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+              <td style="color: var(--muted-foreground); padding: 0.5rem 0;">Glass Material</td>
+              <td style="text-align: right; font-weight: 500;">{{ product.glass_material }}</td>
+            </tr>
+            {% endif %}
+            {% if product.strap_material %}
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+              <td style="color: var(--muted-foreground); padding: 0.5rem 0;">Strap Material</td>
+              <td style="text-align: right; font-weight: 500;">{{ product.strap_material }}</td>
+            </tr>
+            {% endif %}
+            {% if product.movement %}
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+              <td style="color: var(--muted-foreground); padding: 0.5rem 0;">Movement</td>
+              <td style="text-align: right; font-weight: 500;">{{ product.movement }}</td>
+            </tr>
+            {% endif %}
+            {% if product.strap_color %}
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+              <td style="color: var(--muted-foreground); padding: 0.5rem 0;">Strap Color</td>
+              <td style="text-align: right; font-weight: 500;">{{ product.strap_color }}</td>
+            </tr>
+            {% endif %}
+            {% if product.dial_color %}
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+              <td style="color: var(--muted-foreground); padding: 0.5rem 0;">Dial Color</td>
+              <td style="text-align: right; font-weight: 500;">{{ product.dial_color }}</td>
+            </tr>
+            {% endif %}
+            {% if product.case_material %}
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+              <td style="color: var(--muted-foreground); padding: 0.5rem 0;">Case Material</td>
+              <td style="text-align: right; font-weight: 500;">{{ product.case_material }}</td>
+            </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 

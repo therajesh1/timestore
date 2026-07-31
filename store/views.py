@@ -173,7 +173,12 @@ def product_create(request):
             messages.success(request, f"{product.name} added to the catalog.")
             return redirect("product_manage_list")
     else:
-        form = ProductForm()
+        count = Product.objects.count()
+        next_ref = str(count + 1)
+        while Product.objects.filter(ref=next_ref).exists():
+            count += 1
+            next_ref = str(count + 1)
+        form = ProductForm(initial={"ref": next_ref})
     return render(request, "store/product_form.html", {"form": form, "is_new": True})
 
 
@@ -226,19 +231,17 @@ def brand_detail(request, pk):
                 form.save()
                 messages.success(request, "Brand updated.")
                 return redirect("brand_detail", pk=brand.pk)
-            subbrand_form = SubBrandForm()
+            subbrand_form = SubBrandForm(initial={"brand": brand})
         else:
             form = BrandForm(instance=brand)
             subbrand_form = SubBrandForm(request.POST)
             if subbrand_form.is_valid():
-                sub_brand = subbrand_form.save(commit=False)
-                sub_brand.brand = brand
-                sub_brand.save()
-                messages.success(request, f"Sub-brand “{sub_brand.name}” added to {brand.name}.")
+                sub_brand = subbrand_form.save()
+                messages.success(request, f"Sub-brand “{sub_brand.name}” added to {sub_brand.brand.name}.")
                 return redirect("brand_detail", pk=brand.pk)
     else:
         form = BrandForm(instance=brand)
-        subbrand_form = SubBrandForm()
+        subbrand_form = SubBrandForm(initial={"brand": brand})
     return render(request, "store/brand_detail.html", {
         "brand": brand,
         "form": form,
