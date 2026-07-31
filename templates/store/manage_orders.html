@@ -5,6 +5,8 @@
   <p class="eyebrow"><span class="gold-line"></span>Admin</p>
   <h2 style="font-size: 2.75rem; margin-bottom: 2rem;">Manage <em>Orders</em></h2>
 
+  {% include "store/_admin_category_tabs.html" with base_url=request.path %}
+
   <div class="filter-bar">
     <a href="{% url 'order_manage_list' %}" class="{% if not status %}active{% endif %}">All</a>
     {% for value, label in statuses %}

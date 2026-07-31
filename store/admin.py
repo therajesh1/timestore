@@ -33,11 +33,11 @@ class SubBrandAdmin(admin.ModelAdmin):
 class ProductAdmin(admin.ModelAdmin):
     list_display = ("ref", "name", "brand", "category", "mrp", "price", "stock", "featured", "created_at")
     list_filter = ("brand", "category", "gst_percent", "featured")
-    search_fields = ("name", "ref", "ean_code", "model_number", "tts_model", "tagline", "brand__name")
+    search_fields = ("name", "ref", "ean_code", "model_number", "tts_model", "description", "brand__name")
     list_editable = ("price", "stock", "featured")
     autocomplete_fields = ("brand", "sub_brand")
     ordering = ("-created_at",)
-    readonly_fields = ("created_at",)
+    readonly_fields = ("ref", "created_at")
     fieldsets = (
         ("Product Details", {
             "fields": (
@@ -48,8 +48,16 @@ class ProductAdmin(admin.ModelAdmin):
                 ("brand", "sub_brand"),
                 ("category", "product_type"),
                 ("colour", "collection"),
-                "tagline",
+                "description",
                 ("image", "image_url"),
+            ),
+        }),
+        ("Specifications", {
+            "fields": (
+                ("warranty_period", "movement"),
+                ("glass_material", "case_material"),
+                ("strap_material", "strap_color"),
+                "dial_color",
             ),
         }),
         ("Pricing & Tax", {
@@ -60,9 +68,19 @@ class ProductAdmin(admin.ModelAdmin):
             ),
         }),
         ("Inventory & Notes", {
-            "fields": ("stock", "featured", "description", "remark"),
+            "fields": ("stock", "featured", "remark"),
         }),
     )
+
+    def save_model(self, request, obj, form, change):
+        if not obj.ref:
+            count = Product.objects.count()
+            next_ref = str(count + 1)
+            while Product.objects.filter(ref=next_ref).exists():
+                count += 1
+                next_ref = str(count + 1)
+            obj.ref = next_ref
+        super().save_model(request, obj, form, change)
 
 
 class OrderItemInline(admin.TabularInline):

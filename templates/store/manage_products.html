@@ -10,6 +10,8 @@
     <a href="{% url 'product_create' %}" class="btn btn-accent">+ Add Product</a>
   </div>
 
+  {% include "store/_admin_category_tabs.html" with base_url=request.path %}
+
   <form method="get" class="nav-search" style="max-width: 360px; margin-bottom: 2rem;">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color: var(--muted-foreground)">
       <circle cx="11" cy="11" r="7" /><path d="M21 21l-4.35-4.35" />

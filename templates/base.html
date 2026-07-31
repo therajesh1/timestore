@@ -75,39 +75,7 @@
              class="brand-chip category-chip"
              data-shows-brands="{{ cat.shows_brands|yesno:'true,false' }}">
             <span class="brand-badge">
-              {% if cat.icon == "wristwatch" %}
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <circle cx="12" cy="12" r="7" />
-                  <path d="M12 9v3l2 1.5" />
-                  <path d="M12 3v2M12 19v2" />
-                </svg>
-              {% elif cat.icon == "wallclock" %}
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <rect x="4.5" y="4" width="15" height="16" rx="2" />
-                  <path d="M12 9v4l2.5 1.5" />
-                </svg>
-              {% elif cat.icon == "perfume" %}
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <path d="M10 4h4v3h-4z" />
-                  <rect x="7" y="7" width="10" height="13" rx="2" />
-                  <path d="M12 11v5" />
-                </svg>
-              {% elif cat.icon == "accessories" %}
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <path d="M9 8V6a3 3 0 016 0v2" />
-                  <path d="M6 8h12l-1 12H7L6 8z" />
-                </svg>
-              {% elif cat.icon == "smartwatch" %}
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <path d="M9 6V4h6v2M9 18v2h6v-2" />
-                  <rect x="7" y="6" width="10" height="12" rx="3" />
-                </svg>
-              {% elif cat.icon == "kids" %}
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <circle cx="12" cy="12" r="10" />
-                  <path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01" />
-                </svg>
-              {% endif %}
+              <img src="{% static 'images/icons/' %}{{ cat.icon }}.png" alt="{{ cat.name }}" class="brand-badge-img" />
             </span>
             <span class="brand-chip-name">{{ cat.name }}</span>
           </a>

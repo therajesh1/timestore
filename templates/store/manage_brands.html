@@ -6,6 +6,8 @@
   <p class="eyebrow"><span class="gold-line"></span>Admin</p>
   <h2 style="font-size: 2.75rem; margin-bottom: 2rem;">Manage <em>Brands</em></h2>
 
+  {% include "store/_admin_category_tabs.html" with base_url=request.path %}
+
   <div class="card-panel" style="margin-bottom: 2.5rem; max-width: 480px;">
     <p class="mono" style="font-size:0.75rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent); margin-bottom:1.25rem;">Add a New Brand</p>
     <form method="post" enctype="multipart/form-data">

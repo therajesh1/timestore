@@ -37,7 +37,7 @@ def product_list(request):
     if category in valid_categories:
         products = products.filter(category=category)
     if query:
-        products = products.filter(name__icontains=query) | products.filter(tagline__icontains=query)
+        products = products.filter(name__icontains=query) | products.filter(description__icontains=query)
 
     selected_brand = None
     if brand_slug:
@@ -159,27 +159,46 @@ def dashboard(request):
 def product_manage_list(request):
     products = Product.objects.select_related("brand", "sub_brand").all()
     query = request.GET.get("q", "")
+    category = request.GET.get("category", "")
     if query:
         products = products.filter(name__icontains=query) | products.filter(ref__icontains=query)
-    return render(request, "store/manage_products.html", {"products": products, "query": query})
+    if category:
+        products = products.filter(category=category)
+    return render(request, "store/manage_products.html", {
+        "products": products,
+        "query": query,
+        "categories": Product.Category.choices,
+        "selected_category": category,
+    })
+
+
+def _next_product_ref():
+    count = Product.objects.count()
+    next_ref = str(count + 1)
+    while Product.objects.filter(ref=next_ref).exists():
+        count += 1
+        next_ref = str(count + 1)
+    return next_ref
 
 
 @staff_member_required
 def product_create(request):
+    selected_category = request.GET.get("category", Product.Category.WRIST_WATCH)
     if request.method == "POST":
         form = ProductForm(request.POST, request.FILES)
         if form.is_valid():
-            product = form.save()
+            product = form.save(commit=False)
+            product.ref = _next_product_ref()
+            product.save()
             messages.success(request, f"{product.name} added to the catalog.")
             return redirect("product_manage_list")
+        selected_category = request.POST.get("category", selected_category)
     else:
-        count = Product.objects.count()
-        next_ref = str(count + 1)
-        while Product.objects.filter(ref=next_ref).exists():
-            count += 1
-            next_ref = str(count + 1)
-        form = ProductForm(initial={"ref": next_ref})
-    return render(request, "store/product_form.html", {"form": form, "is_new": True})
+        form = ProductForm(initial={"ref": _next_product_ref(), "category": selected_category})
+    return render(request, "store/product_form.html", {
+        "form": form, "is_new": True,
+        "categories": Product.Category.choices, "selected_category": selected_category,
+    })
 
 
 @staff_member_required
@@ -193,7 +212,10 @@ def product_update(request, pk):
             return redirect("product_manage_list")
     else:
         form = ProductForm(instance=product)
-    return render(request, "store/product_form.html", {"form": form, "is_new": False, "product": product})
+    return render(request, "store/product_form.html", {
+        "form": form, "is_new": False, "product": product,
+        "categories": Product.Category.choices, "selected_category": product.category,
+    })
 
 
 @staff_member_required
@@ -210,6 +232,9 @@ def product_delete(request, pk):
 @staff_member_required
 def brand_manage_list(request):
     brands = Brand.objects.all()
+    category = request.GET.get("category", "")
+    if category:
+        brands = brands.filter(products__category=category).distinct()
     if request.method == "POST":
         form = BrandForm(request.POST, request.FILES)
         if form.is_valid():
@@ -218,7 +243,10 @@ def brand_manage_list(request):
             return redirect("brand_manage_list")
     else:
         form = BrandForm()
-    return render(request, "store/manage_brands.html", {"brands": brands, "form": form})
+    return render(request, "store/manage_brands.html", {
+        "brands": brands, "form": form,
+        "categories": Product.Category.choices, "selected_category": category,
+    })
 
 
 @staff_member_required
@@ -238,7 +266,7 @@ def brand_detail(request, pk):
             if subbrand_form.is_valid():
                 sub_brand = subbrand_form.save()
                 messages.success(request, f"Sub-brand “{sub_brand.name}” added to {sub_brand.brand.name}.")
-                return redirect("brand_detail", pk=brand.pk)
+                return redirect("brand_detail", pk=sub_brand.brand_id)
     else:
         form = BrandForm(instance=brand)
         subbrand_form = SubBrandForm(initial={"brand": brand})
@@ -264,9 +292,15 @@ def subbrand_delete(request, pk):
 def order_manage_list(request):
     orders = Order.objects.select_related("user").all()
     status = request.GET.get("status", "")
+    category = request.GET.get("category", "")
     if status:
         orders = orders.filter(status=status)
-    return render(request, "store/manage_orders.html", {"orders": orders, "status": status, "statuses": Order.Status.choices})
+    if category:
+        orders = orders.filter(items__product__category=category).distinct()
+    return render(request, "store/manage_orders.html", {
+        "orders": orders, "status": status, "statuses": Order.Status.choices,
+        "categories": Product.Category.choices, "selected_category": category,
+    })
 
 
 @staff_member_required

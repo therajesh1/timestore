@@ -23,9 +23,10 @@ class ProductForm(forms.ModelForm):
         fields = [
             "ref", "ean_code", "name", "model_number", "tts_model",
             "brand", "sub_brand", "category", "product_type", "colour", "collection",
+            "description",
             "image", "image_url",
             "mrp", "price", "gst_percent", "hsn_code", "min_qty",
-            "stock", "featured", "description", "remark",
+            "stock", "featured", "remark",
             "warranty_period", "glass_material", "strap_material",
             "movement", "strap_color", "dial_color", "case_material",
         ]
@@ -33,6 +34,11 @@ class ProductForm(forms.ModelForm):
             "description": forms.Textarea(attrs={"rows": 3}),
             "remark": forms.Textarea(attrs={"rows": 3}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["ref"].disabled = True
+        self.fields["ref"].help_text = "Auto-generated from the product count."
 
 
 class BrandForm(forms.ModelForm):

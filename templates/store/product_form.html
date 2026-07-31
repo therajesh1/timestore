@@ -7,6 +7,8 @@
     {% if is_new %}Add <em>Product</em>{% else %}Edit <em>{{ product.name }}</em>{% endif %}
   </h2>
 
+  {% include "store/_admin_category_tabs.html" with base_url=request.path %}
+
   <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {% if form.errors %}
@@ -28,7 +30,11 @@
     <div class="card-panel" style="margin-bottom: 1.5rem;">
       <p class="mono" style="font-size:0.75rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent); margin-bottom:1.25rem;">Product Details</p>
 
-      <div class="form-field">{{ form.ref.label_tag }}{{ form.ref }}{% if form.ref.errors %}<p class="form-errors">{{ form.ref.errors|striptags }}</p>{% endif %}</div>
+      <div class="form-field">
+        <label>Product ID / ref. code</label>
+        {{ form.ref }}
+        <p class="helptext">{{ form.ref.help_text }}</p>
+      </div>
       <div class="form-field">{{ form.ean_code.label_tag }}{{ form.ean_code }}</div>
       <div class="form-field">{{ form.name.label_tag }}{{ form.name }}{% if form.name.errors %}<p class="form-errors">{{ form.name.errors|striptags }}</p>{% endif %}</div>
       <div class="form-row">
@@ -53,7 +59,7 @@
         <div class="form-field">{{ form.colour.label_tag }}{{ form.colour }}</div>
         <div class="form-field">{{ form.collection.label_tag }}{{ form.collection }}</div>
       </div>
-      <div class="form-field">{{ form.tagline.label_tag }}{{ form.tagline }}</div>
+      <div class="form-field">{{ form.description.label_tag }}{{ form.description }}</div>
       <div class="form-row">
         <div class="form-field">
           {{ form.image.label_tag }}{{ form.image }}
@@ -61,6 +67,23 @@
         </div>
         <div class="form-field">{{ form.image_url.label_tag }}{{ form.image_url }}</div>
       </div>
+    </div>
+
+    <div class="card-panel" style="margin-bottom: 1.5rem;">
+      <p class="mono" style="font-size:0.75rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent); margin-bottom:1.25rem;">Specifications</p>
+      <div class="form-row">
+        <div class="form-field">{{ form.warranty_period.label_tag }}{{ form.warranty_period }}</div>
+        <div class="form-field">{{ form.movement.label_tag }}{{ form.movement }}</div>
+      </div>
+      <div class="form-row">
+        <div class="form-field">{{ form.glass_material.label_tag }}{{ form.glass_material }}</div>
+        <div class="form-field">{{ form.case_material.label_tag }}{{ form.case_material }}</div>
+      </div>
+      <div class="form-row">
+        <div class="form-field">{{ form.strap_material.label_tag }}{{ form.strap_material }}</div>
+        <div class="form-field">{{ form.strap_color.label_tag }}{{ form.strap_color }}</div>
+      </div>
+      <div class="form-field">{{ form.dial_color.label_tag }}{{ form.dial_color }}</div>
     </div>
 
     <div class="card-panel" style="margin-bottom: 1.5rem;">
@@ -84,7 +107,6 @@
           {{ form.featured }}{{ form.featured.label_tag }}
         </div>
       </div>
-      <div class="form-field">{{ form.description.label_tag }}{{ form.description }}</div>
       <div class="form-field">{{ form.remark.label_tag }}{{ form.remark }}</div>
     </div>
 
