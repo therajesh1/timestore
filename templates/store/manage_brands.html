@@ -10,6 +10,21 @@
     <p class="mono" style="font-size:0.75rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent); margin-bottom:1.25rem;">Add a New Brand</p>
     <form method="post" enctype="multipart/form-data">
       {% csrf_token %}
+      {% if form.errors %}
+        <div class="card-panel" style="border-color:#B3261E; margin-bottom: 1.5rem; background: rgba(179,38,30,0.05); padding: 1.5rem;">
+          <p class="mono" style="color:#B3261E; font-size:0.8rem; font-weight:600; text-transform:uppercase; margin-bottom:0.75rem; letter-spacing:0.1em;">Please correct the errors below</p>
+          <ul style="color:#B3261E; font-size:0.9rem; padding-left:1.25rem; margin:0;">
+            {% for field in form %}
+              {% for error in field.errors %}
+                <li style="margin-bottom:0.25rem;"><strong>{{ field.label }}:</strong> {{ error|striptags }}</li>
+              {% endfor %}
+            {% endfor %}
+            {% for error in form.non_field_errors %}
+              <li style="margin-bottom:0.25rem;">{{ error|striptags }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
       <div class="form-field">{{ form.name.label_tag }}{{ form.name }}{% if form.name.errors %}<p class="form-errors">{{ form.name.errors|striptags }}</p>{% endif %}</div>
       <div class="form-field">{{ form.logo.label_tag }}{{ form.logo }}</div>
       <div class="form-field">{{ form.logo_static.label_tag }}{{ form.logo_static }}</div>
