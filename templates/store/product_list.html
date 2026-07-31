@@ -12,9 +12,10 @@
   </div>
 
   <div class="filter-bar">
-    <a href="{% url 'product_list' %}" class="{% if not category and not selected_brand %}active{% endif %}">All Timepieces</a>
-    <a href="{% url 'product_list' %}?category=Men" class="{% if category == 'Men' %}active{% endif %}">Watches for Men</a>
-    <a href="{% url 'product_list' %}?category=Women" class="{% if category == 'Women' %}active{% endif %}">Watches for Women</a>
+    <a href="{% url 'product_list' %}" class="{% if not category and not selected_brand %}active{% endif %}">All Items</a>
+    {% for cat in categories %}
+      <a href="{% url 'product_list' %}?category={{ cat }}" class="{% if category == cat %}active{% endif %}">{{ cat }}</a>
+    {% endfor %}
   </div>
 
   {% if products %}

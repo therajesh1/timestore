@@ -34,10 +34,11 @@ GENDER_TILES = [
 
 NAV_CATEGORIES = [
     {"name": "Wrist Watch", "slug": "wrist-watch", "icon": "wristwatch", "shows_brands": True},
-    {"name": "Wall Clock & ATP", "slug": "wall-clock", "icon": "wallclock", "shows_brands": False},
+    {"name": "Wall Clocks", "slug": "wall-clocks", "icon": "wallclock", "shows_brands": False},
     {"name": "Perfumes", "slug": "perfumes", "icon": "perfume", "shows_brands": False},
     {"name": "Accessories", "slug": "accessories", "icon": "accessories", "shows_brands": False},
-    {"name": "Smart Watches and Wearables", "slug": "smart-watches", "icon": "smartwatch", "shows_brands": False},
+    {"name": "Smart Watchs", "slug": "smart-watchs", "icon": "smartwatch", "shows_brands": False},
+    {"name": "Kids", "slug": "kids", "icon": "kids", "shows_brands": False},
 ]
 
 BRANDS = [

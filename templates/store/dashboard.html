@@ -10,9 +10,13 @@
       <p class="value">{{ product_count }}</p>
       <p class="label mono">Total Products</p>
     </div>
-    <div class="stat-card">
-      <p class="value">{{ men_count }} / {{ women_count }}</p>
-      <p class="label mono">Men / Women</p>
+    <div class="stat-card" style="grid-column: span 2;">
+      <p class="value" style="font-size: 1rem; font-family: 'JetBrains Mono', monospace; font-weight: 500; margin-top: 0.6rem; line-height: 1.6;">
+        {% for cat, count in category_counts.items %}
+          {{ cat }}: <span style="color:var(--accent);">{{ count }}</span>{% if not forloop.last %} &nbsp;·&nbsp; {% endif %}
+        {% endfor %}
+      </p>
+      <p class="label mono">Categories</p>
     </div>
     <div class="stat-card">
       <p class="value">{{ order_count }}</p>

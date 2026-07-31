@@ -47,21 +47,21 @@
 </section>
 
 <section class="gender-tiles">
-  <a href="{% url 'product_list' %}?category=Men" class="gender-tile">
+  <a href="{% url 'product_list' %}?category=Wrist+Watch" class="gender-tile">
     <img src="https://images.unsplash.com/photo-1602752975366-5520991f958d?w=900&h=1100&fit=crop&auto=format" alt="Man wearing a chronograph watch" />
     <div class="overlay"></div>
     <div class="caption">
       <p class="mono" style="font-size:10px; letter-spacing:0.4em; text-transform:uppercase; opacity:0.75;">Watches</p>
-      <h3><em>For Him</em></h3>
+      <h3><em>Wrist Watches</em></h3>
       <span class="mono" style="font-size:0.85rem; letter-spacing:0.15em; text-transform:uppercase; border-bottom:1px solid rgba(247,244,239,0.6); padding-bottom:2px;">Shop Now →</span>
     </div>
   </a>
-  <a href="{% url 'product_list' %}?category=Women" class="gender-tile">
+  <a href="{% url 'product_list' %}?category=Smart+Watchs" class="gender-tile">
     <img src="https://images.unsplash.com/photo-1653651460770-73513a4b25a5?w=900&h=1100&fit=crop&auto=format" alt="Woman wearing a rose gold watch" />
     <div class="overlay"></div>
     <div class="caption">
       <p class="mono" style="font-size:10px; letter-spacing:0.4em; text-transform:uppercase; opacity:0.75;">Watches</p>
-      <h3><em>For Her</em></h3>
+      <h3><em>Smart Watches</em></h3>
       <span class="mono" style="font-size:0.85rem; letter-spacing:0.15em; text-transform:uppercase; border-bottom:1px solid rgba(247,244,239,0.6); padding-bottom:2px;">Shop Now →</span>
     </div>
   </a>
@@ -76,14 +76,14 @@
     <a href="{% url 'product_list' %}" class="btn-link">View all timepieces →</a>
   </div>
 
-  <p class="mono" style="font-size:11px; letter-spacing:0.3em; text-transform:uppercase; color: var(--accent); margin-bottom:1rem;">For Him</p>
+  <p class="mono" style="font-size:11px; letter-spacing:0.3em; text-transform:uppercase; color: var(--accent); margin-bottom:1rem;">Wrist Watches</p>
   <div class="product-grid" style="margin-bottom: 3rem;">
-    {% for product in men %}{% include "store/_product_card.html" %}{% endfor %}
+    {% for product in wrist_watches %}{% include "store/_product_card.html" %}{% endfor %}
   </div>
 
-  <p class="mono" style="font-size:11px; letter-spacing:0.3em; text-transform:uppercase; color: var(--accent); margin-bottom:1rem;">For Her</p>
+  <p class="mono" style="font-size:11px; letter-spacing:0.3em; text-transform:uppercase; color: var(--accent); margin-bottom:1rem;">Smart Watches</p>
   <div class="product-grid">
-    {% for product in women %}{% include "store/_product_card.html" %}{% endfor %}
+    {% for product in smart_watches %}{% include "store/_product_card.html" %}{% endfor %}
   </div>
 </section>
 

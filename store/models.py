@@ -47,8 +47,12 @@ class SubBrand(models.Model):
 
 class Product(models.Model):
     class Category(models.TextChoices):
-        MEN = "Men", "Men"
-        WOMEN = "Women", "Women"
+        WRIST_WATCH = "Wrist Watch", "Wrist Watch"
+        WALL_CLOCKS = "Wall Clocks", "Wall Clocks"
+        PERFUMES = "Perfumes", "Perfumes"
+        ACCESSORIES = "Accessories", "Accessories"
+        SMART_WATCHS = "Smart Watchs", "Smart Watchs"
+        KIDS = "Kids", "Kids"
 
     class GST(models.TextChoices):
         ZERO = "0", "0%"
@@ -66,7 +70,7 @@ class Product(models.Model):
     tts_model = models.CharField("TTS model", max_length=50, blank=True, default="")
     brand = models.ForeignKey(Brand, on_delete=models.SET_NULL, null=True, blank=True, related_name="products")
     sub_brand = models.ForeignKey(SubBrand, on_delete=models.SET_NULL, null=True, blank=True, related_name="products")
-    category = models.CharField("Gender", max_length=10, choices=Category.choices)
+    category = models.CharField("Category", max_length=30, choices=Category.choices)
     product_type = models.CharField("Type", max_length=50, blank=True, default="")
     colour = models.CharField(max_length=30, blank=True, default="")
     collection = models.CharField(max_length=50, blank=True, default="")

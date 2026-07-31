@@ -15,14 +15,14 @@ from .models import Brand, Order, OrderItem, Product, SubBrand
 
 
 def home(request):
-    men = Product.objects.filter(category=Product.Category.MEN)[:4]
-    women = Product.objects.filter(category=Product.Category.WOMEN)[:4]
+    wrist_watches = Product.objects.filter(category=Product.Category.WRIST_WATCH)[:4]
+    smart_watches = Product.objects.filter(category=Product.Category.SMART_WATCHS)[:4]
     context = {
         "hero_slides": HERO_SLIDES,
         "gender_tiles": GENDER_TILES,
         "features": FEATURES,
-        "men": men,
-        "women": women,
+        "wrist_watches": wrist_watches,
+        "smart_watches": smart_watches,
     }
     return render(request, "store/home.html", context)
 
@@ -33,7 +33,8 @@ def product_list(request):
     query = request.GET.get("q", "")
     brand_slug = request.GET.get("brand", "")
 
-    if category in (Product.Category.MEN, Product.Category.WOMEN):
+    valid_categories = [choice[0] for choice in Product.Category.choices]
+    if category in valid_categories:
         products = products.filter(category=category)
     if query:
         products = products.filter(name__icontains=query) | products.filter(tagline__icontains=query)
@@ -46,6 +47,7 @@ def product_list(request):
     context = {
         "products": products,
         "category": category,
+        "categories": valid_categories,
         "query": query,
         "selected_brand": selected_brand,
     }
@@ -136,10 +138,15 @@ def dashboard(request):
     products = Product.objects.all()
     orders = Order.objects.all()
     revenue = orders.aggregate(total=Sum("total"))["total"] or Decimal("0")
+    
+    category_counts = {
+        cat[0]: products.filter(category=cat[0]).count()
+        for cat in Product.Category.choices
+    }
+    
     context = {
         "product_count": products.count(),
-        "men_count": products.filter(category=Product.Category.MEN).count(),
-        "women_count": products.filter(category=Product.Category.WOMEN).count(),
+        "category_counts": category_counts,
         "order_count": orders.count(),
         "revenue": revenue,
         "recent_orders": orders.select_related("user")[:8],
