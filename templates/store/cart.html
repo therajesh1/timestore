@@ -32,7 +32,7 @@
       </tbody>
     </table>
 
-    <div style="display:flex; justify-content:flex-end; margin-top: 2rem; gap: 2rem; align-items:center;">
+    <div class="cart-summary-row">
       <p class="mono" style="font-size:1.25rem;">Total: <span style="color:var(--accent);">₹{{ cart.total|floatformat:0 }}</span></p>
       <a href="{% url 'checkout' %}" class="btn btn-accent">Proceed to Checkout →</a>
     </div>

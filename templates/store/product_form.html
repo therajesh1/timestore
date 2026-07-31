@@ -17,11 +17,11 @@
       <div class="form-field">{{ form.ref.label_tag }}{{ form.ref }}{% if form.ref.errors %}<p class="form-errors">{{ form.ref.errors|striptags }}</p>{% endif %}</div>
       <div class="form-field">{{ form.ean_code.label_tag }}{{ form.ean_code }}</div>
       <div class="form-field">{{ form.name.label_tag }}{{ form.name }}{% if form.name.errors %}<p class="form-errors">{{ form.name.errors|striptags }}</p>{% endif %}</div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+      <div class="form-row">
         <div class="form-field">{{ form.model_number.label_tag }}{{ form.model_number }}</div>
         <div class="form-field">{{ form.tts_model.label_tag }}{{ form.tts_model }}</div>
       </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+      <div class="form-row">
         <div class="form-field">
           {{ form.brand.label_tag }}{{ form.brand }}
           <a href="{% url 'brand_manage_list' %}" class="btn-link" style="display:inline-block; margin-top:0.4rem; font-size:0.75rem;">+ New brand</a>
@@ -31,16 +31,16 @@
           <a href="{% url 'brand_manage_list' %}" class="btn-link" style="display:inline-block; margin-top:0.4rem; font-size:0.75rem;">+ New sub-brand</a>
         </div>
       </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+      <div class="form-row">
         <div class="form-field">{{ form.category.label_tag }}{{ form.category }}</div>
         <div class="form-field">{{ form.product_type.label_tag }}{{ form.product_type }}</div>
       </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+      <div class="form-row">
         <div class="form-field">{{ form.colour.label_tag }}{{ form.colour }}</div>
         <div class="form-field">{{ form.collection.label_tag }}{{ form.collection }}</div>
       </div>
       <div class="form-field">{{ form.tagline.label_tag }}{{ form.tagline }}</div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+      <div class="form-row">
         <div class="form-field">
           {{ form.image.label_tag }}{{ form.image }}
           {% if product and product.image %}<p class="mono" style="font-size:0.75rem; color:var(--muted-foreground); margin-top:0.35rem;">Current: {{ product.image.name }}</p>{% endif %}
@@ -51,11 +51,11 @@
 
     <div class="card-panel" style="margin-bottom: 1.5rem;">
       <p class="mono" style="font-size:0.75rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent); margin-bottom:1.25rem;">Pricing &amp; Tax</p>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+      <div class="form-row">
         <div class="form-field">{{ form.mrp.label_tag }}{{ form.mrp }}</div>
         <div class="form-field">{{ form.price.label_tag }}{{ form.price }}{% if form.price.errors %}<p class="form-errors">{{ form.price.errors|striptags }}</p>{% endif %}</div>
       </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+      <div class="form-row">
         <div class="form-field">{{ form.gst_percent.label_tag }}{{ form.gst_percent }}</div>
         <div class="form-field">{{ form.hsn_code.label_tag }}{{ form.hsn_code }}</div>
       </div>
@@ -64,7 +64,7 @@
 
     <div class="card-panel" style="margin-bottom: 2rem;">
       <p class="mono" style="font-size:0.75rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent); margin-bottom:1.25rem;">Inventory &amp; Notes</p>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+      <div class="form-row">
         <div class="form-field">{{ form.stock.label_tag }}{{ form.stock }}</div>
         <div class="form-field" style="display:flex; align-items:center; gap:0.5rem; margin-top:1.6rem;">
           {{ form.featured }}{{ form.featured.label_tag }}
