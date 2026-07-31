@@ -82,6 +82,7 @@ class Product(models.Model):
     strap_color = models.CharField("Strap Color", max_length=120, blank=True, default="")
     dial_color = models.CharField("Dial Color", max_length=120, blank=True, default="")
     case_material = models.CharField("Case Material", max_length=120, blank=True, default="")
+    features = models.TextField("Features", blank=True, default="", help_text="e.g. fragrance notes, key highlights")
 
     # Pricing & tax
     mrp = models.DecimalField("MRP", max_digits=12, decimal_places=2, default=0, help_text="Maximum retail price, in INR")

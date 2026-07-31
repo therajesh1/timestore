@@ -18,6 +18,12 @@ class CheckoutForm(forms.Form):
 
 
 class ProductForm(forms.ModelForm):
+    # Fields kept when instantiated with simple=True (Wall Clocks / Perfumes / Accessories).
+    # Every field NOT in this set is deleted from the form so it's left untouched on
+    # save (rather than being explicitly cleared, which would happen if it stayed in
+    # the form as an empty, unrendered field).
+    SIMPLE_FIELDS = {"ref", "name", "description", "price", "category", "features"}
+
     class Meta:
         model = Product
         fields = [
@@ -28,17 +34,22 @@ class ProductForm(forms.ModelForm):
             "mrp", "price", "gst_percent", "hsn_code", "min_qty",
             "stock", "featured", "remark",
             "warranty_period", "glass_material", "strap_material",
-            "movement", "strap_color", "dial_color", "case_material",
+            "movement", "strap_color", "dial_color", "case_material", "features",
         ]
         widgets = {
             "description": forms.Textarea(attrs={"rows": 3}),
             "remark": forms.Textarea(attrs={"rows": 3}),
+            "features": forms.Textarea(attrs={"rows": 3}),
         }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, simple=False, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["ref"].disabled = True
         self.fields["ref"].help_text = "Auto-generated from the product count."
+        if simple:
+            for name in list(self.fields):
+                if name not in self.SIMPLE_FIELDS:
+                    del self.fields[name]
 
 
 class BrandForm(forms.ModelForm):

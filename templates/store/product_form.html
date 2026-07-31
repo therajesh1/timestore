@@ -27,88 +27,111 @@
       </div>
     {% endif %}
 
-    <div class="card-panel" style="margin-bottom: 1.5rem;">
-      <p class="mono" style="font-size:0.75rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent); margin-bottom:1.25rem;">Product Details</p>
+    {% if selected_category == "Wall Clocks" or selected_category == "Perfumes" or selected_category == "Accessories" %}
+      <input type="hidden" name="category" value="{{ selected_category }}" />
 
-      <div class="form-field">
-        <label>Product ID / ref. code</label>
-        {{ form.ref }}
-        <p class="helptext">{{ form.ref.help_text }}</p>
-      </div>
-      <div class="form-field">{{ form.ean_code.label_tag }}{{ form.ean_code }}</div>
-      <div class="form-field">{{ form.name.label_tag }}{{ form.name }}{% if form.name.errors %}<p class="form-errors">{{ form.name.errors|striptags }}</p>{% endif %}</div>
-      <div class="form-row">
-        <div class="form-field">{{ form.model_number.label_tag }}{{ form.model_number }}</div>
-        <div class="form-field">{{ form.tts_model.label_tag }}{{ form.tts_model }}</div>
-      </div>
-      <div class="form-row">
+      <div class="card-panel" style="margin-bottom: 1.5rem;">
+        <p class="mono" style="font-size:0.75rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent); margin-bottom:1.25rem;">Product Details</p>
         <div class="form-field">
-          {{ form.brand.label_tag }}{{ form.brand }}
-          <a href="{% url 'brand_manage_list' %}" class="btn-link" style="display:inline-block; margin-top:0.4rem; font-size:0.75rem;">+ New brand</a>
+          <label>Product ID / ref. code</label>
+          {{ form.ref }}
+          <p class="helptext">{{ form.ref.help_text }}</p>
         </div>
-        <div class="form-field">
-          {{ form.sub_brand.label_tag }}{{ form.sub_brand }}
-          <a href="{% url 'brand_manage_list' %}" class="btn-link" style="display:inline-block; margin-top:0.4rem; font-size:0.75rem;">+ New sub-brand</a>
-        </div>
+        <div class="form-field">{{ form.name.label_tag }}{{ form.name }}{% if form.name.errors %}<p class="form-errors">{{ form.name.errors|striptags }}</p>{% endif %}</div>
+        <div class="form-field">{{ form.description.label_tag }}{{ form.description }}</div>
+        {% if selected_category == "Perfumes" %}
+          <div class="form-field">{{ form.features.label_tag }}{{ form.features }}</div>
+        {% endif %}
       </div>
-      <div class="form-row">
-        <div class="form-field">{{ form.category.label_tag }}{{ form.category }}</div>
-        <div class="form-field">{{ form.product_type.label_tag }}{{ form.product_type }}</div>
-      </div>
-      <div class="form-row">
-        <div class="form-field">{{ form.colour.label_tag }}{{ form.colour }}</div>
-        <div class="form-field">{{ form.collection.label_tag }}{{ form.collection }}</div>
-      </div>
-      <div class="form-field">{{ form.description.label_tag }}{{ form.description }}</div>
-      <div class="form-row">
-        <div class="form-field">
-          {{ form.image.label_tag }}{{ form.image }}
-          {% if product and product.image %}<p class="mono" style="font-size:0.75rem; color:var(--muted-foreground); margin-top:0.35rem;">Current: {{ product.image.name }}</p>{% endif %}
-        </div>
-        <div class="form-field">{{ form.image_url.label_tag }}{{ form.image_url }}</div>
-      </div>
-    </div>
 
-    <div class="card-panel" style="margin-bottom: 1.5rem;">
-      <p class="mono" style="font-size:0.75rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent); margin-bottom:1.25rem;">Specifications</p>
-      <div class="form-row">
-        <div class="form-field">{{ form.warranty_period.label_tag }}{{ form.warranty_period }}</div>
-        <div class="form-field">{{ form.movement.label_tag }}{{ form.movement }}</div>
-      </div>
-      <div class="form-row">
-        <div class="form-field">{{ form.glass_material.label_tag }}{{ form.glass_material }}</div>
-        <div class="form-field">{{ form.case_material.label_tag }}{{ form.case_material }}</div>
-      </div>
-      <div class="form-row">
-        <div class="form-field">{{ form.strap_material.label_tag }}{{ form.strap_material }}</div>
-        <div class="form-field">{{ form.strap_color.label_tag }}{{ form.strap_color }}</div>
-      </div>
-      <div class="form-field">{{ form.dial_color.label_tag }}{{ form.dial_color }}</div>
-    </div>
-
-    <div class="card-panel" style="margin-bottom: 1.5rem;">
-      <p class="mono" style="font-size:0.75rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent); margin-bottom:1.25rem;">Pricing &amp; Tax</p>
-      <div class="form-row">
-        <div class="form-field">{{ form.mrp.label_tag }}{{ form.mrp }}</div>
+      <div class="card-panel" style="margin-bottom: 2rem;">
+        <p class="mono" style="font-size:0.75rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent); margin-bottom:1.25rem;">Pricing</p>
         <div class="form-field">{{ form.price.label_tag }}{{ form.price }}{% if form.price.errors %}<p class="form-errors">{{ form.price.errors|striptags }}</p>{% endif %}</div>
       </div>
-      <div class="form-row">
-        <div class="form-field">{{ form.gst_percent.label_tag }}{{ form.gst_percent }}</div>
-        <div class="form-field">{{ form.hsn_code.label_tag }}{{ form.hsn_code }}</div>
-      </div>
-      <div class="form-field">{{ form.min_qty.label_tag }}{{ form.min_qty }}</div>
-    </div>
+    {% else %}
+      <div class="card-panel" style="margin-bottom: 1.5rem;">
+        <p class="mono" style="font-size:0.75rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent); margin-bottom:1.25rem;">Product Details</p>
 
-    <div class="card-panel" style="margin-bottom: 2rem;">
-      <p class="mono" style="font-size:0.75rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent); margin-bottom:1.25rem;">Inventory &amp; Notes</p>
-      <div class="form-row">
-        <div class="form-field">{{ form.stock.label_tag }}{{ form.stock }}</div>
-        <div class="form-field" style="display:flex; align-items:center; gap:0.5rem; margin-top:1.6rem;">
-          {{ form.featured }}{{ form.featured.label_tag }}
+        <div class="form-field">
+          <label>Product ID / ref. code</label>
+          {{ form.ref }}
+          <p class="helptext">{{ form.ref.help_text }}</p>
+        </div>
+        <div class="form-field">{{ form.ean_code.label_tag }}{{ form.ean_code }}</div>
+        <div class="form-field">{{ form.name.label_tag }}{{ form.name }}{% if form.name.errors %}<p class="form-errors">{{ form.name.errors|striptags }}</p>{% endif %}</div>
+        <div class="form-row">
+          <div class="form-field">{{ form.model_number.label_tag }}{{ form.model_number }}</div>
+          <div class="form-field">{{ form.tts_model.label_tag }}{{ form.tts_model }}</div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            {{ form.brand.label_tag }}{{ form.brand }}
+            <a href="{% url 'brand_manage_list' %}" class="btn-link" style="display:inline-block; margin-top:0.4rem; font-size:0.75rem;">+ New brand</a>
+          </div>
+          <div class="form-field">
+            {{ form.sub_brand.label_tag }}{{ form.sub_brand }}
+            <a href="{% url 'brand_manage_list' %}" class="btn-link" style="display:inline-block; margin-top:0.4rem; font-size:0.75rem;">+ New sub-brand</a>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">{{ form.category.label_tag }}{{ form.category }}</div>
+          <div class="form-field">{{ form.product_type.label_tag }}{{ form.product_type }}</div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">{{ form.colour.label_tag }}{{ form.colour }}</div>
+          <div class="form-field">{{ form.collection.label_tag }}{{ form.collection }}</div>
+        </div>
+        <div class="form-field">{{ form.description.label_tag }}{{ form.description }}</div>
+        <div class="form-row">
+          <div class="form-field">
+            {{ form.image.label_tag }}{{ form.image }}
+            {% if product and product.image %}<p class="mono" style="font-size:0.75rem; color:var(--muted-foreground); margin-top:0.35rem;">Current: {{ product.image.name }}</p>{% endif %}
+          </div>
+          <div class="form-field">{{ form.image_url.label_tag }}{{ form.image_url }}</div>
         </div>
       </div>
-      <div class="form-field">{{ form.remark.label_tag }}{{ form.remark }}</div>
-    </div>
+
+      <div class="card-panel" style="margin-bottom: 1.5rem;">
+        <p class="mono" style="font-size:0.75rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent); margin-bottom:1.25rem;">Specifications</p>
+        <div class="form-row">
+          <div class="form-field">{{ form.warranty_period.label_tag }}{{ form.warranty_period }}</div>
+          <div class="form-field">{{ form.movement.label_tag }}{{ form.movement }}</div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">{{ form.glass_material.label_tag }}{{ form.glass_material }}</div>
+          <div class="form-field">{{ form.case_material.label_tag }}{{ form.case_material }}</div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">{{ form.strap_material.label_tag }}{{ form.strap_material }}</div>
+          <div class="form-field">{{ form.strap_color.label_tag }}{{ form.strap_color }}</div>
+        </div>
+        <div class="form-field">{{ form.dial_color.label_tag }}{{ form.dial_color }}</div>
+      </div>
+
+      <div class="card-panel" style="margin-bottom: 1.5rem;">
+        <p class="mono" style="font-size:0.75rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent); margin-bottom:1.25rem;">Pricing &amp; Tax</p>
+        <div class="form-row">
+          <div class="form-field">{{ form.mrp.label_tag }}{{ form.mrp }}</div>
+          <div class="form-field">{{ form.price.label_tag }}{{ form.price }}{% if form.price.errors %}<p class="form-errors">{{ form.price.errors|striptags }}</p>{% endif %}</div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">{{ form.gst_percent.label_tag }}{{ form.gst_percent }}</div>
+          <div class="form-field">{{ form.hsn_code.label_tag }}{{ form.hsn_code }}</div>
+        </div>
+        <div class="form-field">{{ form.min_qty.label_tag }}{{ form.min_qty }}</div>
+      </div>
+
+      <div class="card-panel" style="margin-bottom: 2rem;">
+        <p class="mono" style="font-size:0.75rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent); margin-bottom:1.25rem;">Inventory &amp; Notes</p>
+        <div class="form-row">
+          <div class="form-field">{{ form.stock.label_tag }}{{ form.stock }}</div>
+          <div class="form-field" style="display:flex; align-items:center; gap:0.5rem; margin-top:1.6rem;">
+            {{ form.featured }}{{ form.featured.label_tag }}
+          </div>
+        </div>
+        <div class="form-field">{{ form.remark.label_tag }}{{ form.remark }}</div>
+      </div>
+    {% endif %}
 
     <div style="display:flex; gap:1rem;">
       <button type="submit" class="btn btn-accent">{% if is_new %}Add Product{% else %}Save Changes{% endif %}</button>

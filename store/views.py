@@ -181,20 +181,30 @@ def _next_product_ref():
     return next_ref
 
 
+SIMPLE_CATEGORIES = {
+    Product.Category.WALL_CLOCKS,
+    Product.Category.PERFUMES,
+    Product.Category.ACCESSORIES,
+}
+
+
 @staff_member_required
 def product_create(request):
     selected_category = request.GET.get("category", Product.Category.WRIST_WATCH)
     if request.method == "POST":
-        form = ProductForm(request.POST, request.FILES)
+        selected_category = request.POST.get("category", selected_category)
+        form = ProductForm(request.POST, request.FILES, simple=selected_category in SIMPLE_CATEGORIES)
         if form.is_valid():
             product = form.save(commit=False)
             product.ref = _next_product_ref()
             product.save()
             messages.success(request, f"{product.name} added to the catalog.")
             return redirect("product_manage_list")
-        selected_category = request.POST.get("category", selected_category)
     else:
-        form = ProductForm(initial={"ref": _next_product_ref(), "category": selected_category})
+        form = ProductForm(
+            initial={"ref": _next_product_ref(), "category": selected_category},
+            simple=selected_category in SIMPLE_CATEGORIES,
+        )
     return render(request, "store/product_form.html", {
         "form": form, "is_new": True,
         "categories": Product.Category.choices, "selected_category": selected_category,
@@ -204,14 +214,15 @@ def product_create(request):
 @staff_member_required
 def product_update(request, pk):
     product = get_object_or_404(Product, pk=pk)
+    is_simple = product.category in SIMPLE_CATEGORIES
     if request.method == "POST":
-        form = ProductForm(request.POST, request.FILES, instance=product)
+        form = ProductForm(request.POST, request.FILES, instance=product, simple=is_simple)
         if form.is_valid():
             form.save()
             messages.success(request, f"{product.name} updated.")
             return redirect("product_manage_list")
     else:
-        form = ProductForm(instance=product)
+        form = ProductForm(instance=product, simple=is_simple)
     return render(request, "store/product_form.html", {
         "form": form, "is_new": False, "product": product,
         "categories": Product.Category.choices, "selected_category": product.category,
