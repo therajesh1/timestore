@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Manage Orders · The Time Store{% endblock %}
+{% block content %}
+<section class="section">
+  <p class="eyebrow"><span class="gold-line"></span>Admin</p>
+  <h2 style="font-size: 2.75rem; margin-bottom: 2rem;">Manage <em>Orders</em></h2>
+
+  <div class="filter-bar">
+    <a href="{% url 'order_manage_list' %}" class="{% if not status %}active{% endif %}">All</a>
+    {% for value, label in statuses %}
+      <a href="?status={{ value }}" class="{% if status == value %}active{% endif %}">{{ label }}</a>
+    {% endfor %}
+  </div>
+
+  <div style="overflow-x:auto;">
+    <table class="data-table">
+      <thead><tr><th>Order</th><th>Customer</th><th>Status</th><th>Total</th><th>Date</th><th></th></tr></thead>
+      <tbody>
+        {% for order in orders %}
+          <tr>
+            <td class="mono">#{{ order.id }}</td>
+            <td>{{ order.user.username }}</td>
+            <td class="mono">{{ order.status }}</td>
+            <td class="mono">{{ order.formatted_total }}</td>
+            <td>{{ order.created_at|date:"d M Y" }}</td>
+            <td><a href="{% url 'order_manage_detail' order.pk %}" class="btn-link">View →</a></td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6" style="color:var(--muted-foreground);">No orders found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

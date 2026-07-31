@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Order #{{ order.id }} · The Time Store{% endblock %}
+{% block content %}
+<section class="section" style="max-width: 680px;">
+  <p class="eyebrow"><span class="gold-line"></span>Admin</p>
+  <h2 style="font-size: 2.5rem; margin-bottom: 2rem;">Order <em>#{{ order.id }}</em></h2>
+
+  <div class="card-panel" style="margin-bottom: 1.5rem;">
+    <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:1rem; margin-bottom:1rem;">
+      <div>
+        <p class="mono" style="font-size:0.8rem; color:var(--muted-foreground);">Customer</p>
+        <p>{{ order.user.username }} ({{ order.user.email }})</p>
+      </div>
+      <div>
+        <p class="mono" style="font-size:0.8rem; color:var(--muted-foreground);">Placed</p>
+        <p>{{ order.created_at|date:"d M Y, H:i" }}</p>
+      </div>
+    </div>
+    <p class="mono" style="font-size:0.8rem; color:var(--muted-foreground); margin-bottom:0.25rem;">Shipping Address</p>
+    <p style="white-space:pre-line;">{{ order.shipping_address }}</p>
+  </div>
+
+  <table class="data-table" style="margin-bottom: 1.5rem;">
+    <thead><tr><th>Item</th><th>Qty</th><th style="text-align:right;">Total</th></tr></thead>
+    <tbody>
+      {% for item in order.items.all %}
+        <tr>
+          <td>{{ item.product.name }}</td>
+          <td>{{ item.quantity }}</td>
+          <td class="mono" style="text-align:right;">{{ item.formatted_line_total }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr><td colspan="2" style="font-weight:600;">Total</td><td class="mono" style="text-align:right; font-weight:600;">{{ order.formatted_total }}</td></tr>
+    </tfoot>
+  </table>
+
+  <div class="card-panel" style="max-width: 320px;">
+    <p class="mono" style="font-size:0.75rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent); margin-bottom:1.25rem;">Update Status</p>
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-field">{{ form.status }}</div>
+      <button type="submit" class="btn btn-accent" style="width:100%; justify-content:center;">Update Status</button>
+    </form>
+  </div>
+
+  <p style="margin-top:2rem;"><a href="{% url 'order_manage_list' %}" class="btn-link">← Back to Orders</a></p>
+</section>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Manage Products · The Time Store{% endblock %}
+{% block content %}
+<section class="section">
+  <div style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:1rem; margin-bottom:2rem;">
+    <div>
+      <p class="eyebrow"><span class="gold-line"></span>Admin</p>
+      <h2 style="font-size: 2.75rem;">Manage <em>Products</em></h2>
+    </div>
+    <a href="{% url 'product_create' %}" class="btn btn-accent">+ Add Product</a>
+  </div>
+
+  <form method="get" class="nav-search" style="max-width: 360px; margin-bottom: 2rem;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color: var(--muted-foreground)">
+      <circle cx="11" cy="11" r="7" /><path d="M21 21l-4.35-4.35" />
+    </svg>
+    <input type="text" name="q" placeholder="Search by name or ref" value="{{ query }}" />
+  </form>
+
+  <div style="overflow-x:auto;">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Picture</th><th>Ref</th><th>Name</th><th>Brand</th><th>Gender</th><th>MRP</th><th>Price</th><th>Stock</th><th>Featured</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for product in products %}
+          <tr>
+            <td><img src="{{ product.display_image }}" alt="{{ product.name }}" style="width:40px; height:50px; object-fit:cover;" /></td>
+            <td class="mono">{{ product.ref }}</td>
+            <td>{{ product.name }}</td>
+            <td>{{ product.brand.name|default:"—" }}</td>
+            <td>{{ product.category }}</td>
+            <td class="mono">{{ product.formatted_mrp }}</td>
+            <td class="mono">{{ product.formatted_price }}</td>
+            <td class="mono" style="{% if product.stock <= 2 %}color:#B3261E;{% endif %}">{{ product.stock }}</td>
+            <td>{% if product.featured %}✓{% endif %}</td>
+            <td style="white-space:nowrap;">
+              <a href="{% url 'product_update' product.pk %}" class="btn-link" style="margin-right:1rem;">Edit</a>
+              <a href="{% url 'product_delete' product.pk %}" class="btn-link" style="color:#B3261E; border-color:#B3261E;">Delete</a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="10" style="color:var(--muted-foreground);">No products found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

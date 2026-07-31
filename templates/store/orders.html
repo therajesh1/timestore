@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}My Orders · The Time Store{% endblock %}
+{% block content %}
+<section class="section">
+  <p class="eyebrow"><span class="gold-line"></span>Account</p>
+  <h2 style="font-size: 2.75rem; margin-bottom: 2.5rem;">My <em>Orders</em></h2>
+
+  {% if orders %}
+    {% for order in orders %}
+      <div class="card-panel" style="margin-bottom: 1.5rem;">
+        <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:1rem; margin-bottom:1rem;">
+          <div>
+            <p class="mono" style="font-size:0.8rem; color:var(--muted-foreground);">Order #{{ order.id }} · {{ order.created_at|date:"d M Y, H:i" }}</p>
+            <p class="mono" style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.1em; color: var(--accent); margin-top:0.25rem;">{{ order.status }}</p>
+          </div>
+          <p class="mono" style="font-size:1.1rem;">{{ order.formatted_total }}</p>
+        </div>
+        <table class="data-table">
+          {% for item in order.items.all %}
+            <tr>
+              <td>{{ item.product.name }} × {{ item.quantity }}</td>
+              <td class="mono" style="text-align:right;">{{ item.formatted_line_total }}</td>
+            </tr>
+          {% endfor %}
+        </table>
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="empty-state">
+      <p style="margin-bottom: 1.5rem;">You haven't placed any orders yet.</p>
+      <a href="{% url 'product_list' %}" class="btn btn-accent">Explore Collection</a>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

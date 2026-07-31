@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<section class="hero">
+  <div class="hero-bg">
+    {% for slide in hero_slides %}
+      <img src="{{ slide.image }}" alt="" class="hero-slide-img" data-index="{{ forloop.counter0 }}" style="opacity: {% if forloop.first %}0.55{% else %}0{% endif %}; transition: opacity 1s;" />
+    {% endfor %}
+    <div class="hero-gradient"></div>
+  </div>
+
+  <div class="hero-content" style="display:flex; align-items:flex-end; min-height: 55vh; flex-wrap: wrap; gap: 3rem;">
+    <div style="flex: 1; min-width: 320px;">
+      {% for slide in hero_slides %}
+        <div class="hero-slide-text" data-index="{{ forloop.counter0 }}" style="{% if not forloop.first %}display:none;{% endif %}">
+          <p class="eyebrow"><span class="gold-line"></span>{{ slide.eyebrow }}</p>
+          <h1>{{ slide.title }}<br /><em>{{ slide.title_em }}</em></h1>
+          <p class="hero-desc">{{ slide.description }}</p>
+          <div style="display:flex; align-items:center; gap:1.5rem; flex-wrap:wrap;">
+            <a href="{% url 'product_list' %}{% if slide.cta_category %}?category={{ slide.cta_category }}{% endif %}" class="btn btn-accent">
+              {{ slide.cta_label }}
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+            </a>
+            <a href="#story" class="btn-link">Our Heritage</a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1px; border-top: 1px solid var(--border); flex: 1; min-width: 320px;">
+      {% for f in features %}
+        <div style="padding-top: 1.5rem; padding-right: 1.5rem;">
+          <p class="mono" style="font-size:10px; letter-spacing:0.3em; text-transform:uppercase; color: var(--muted-foreground); margin-bottom: 0.5rem;">{{ f.label }}</p>
+          <p class="serif" style="font-size: 1.75rem; color: var(--accent);">{{ f.value }}</p>
+          {% if f.unit %}<p class="mono" style="font-size:10px; color: var(--muted-foreground);">{{ f.unit }}</p>{% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div style="position:absolute; bottom: 2rem; right: 2rem; display:flex; gap: 0.5rem; z-index: 10;">
+    {% for slide in hero_slides %}
+      <button class="hero-dot" data-index="{{ forloop.counter0 }}" onclick="goToSlide({{ forloop.counter0 }})" style="width: {% if forloop.first %}22px{% else %}7px{% endif %}; height:7px; border-radius:999px; border:none; background: {% if forloop.first %}var(--accent){% else %}var(--border){% endif %}; cursor:pointer;"></button>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="gender-tiles">
+  <a href="{% url 'product_list' %}?category=Men" class="gender-tile">
+    <img src="https://images.unsplash.com/photo-1602752975366-5520991f958d?w=900&h=1100&fit=crop&auto=format" alt="Man wearing a chronograph watch" />
+    <div class="overlay"></div>
+    <div class="caption">
+      <p class="mono" style="font-size:10px; letter-spacing:0.4em; text-transform:uppercase; opacity:0.75;">Watches</p>
+      <h3><em>For Him</em></h3>
+      <span class="mono" style="font-size:0.85rem; letter-spacing:0.15em; text-transform:uppercase; border-bottom:1px solid rgba(247,244,239,0.6); padding-bottom:2px;">Shop Now →</span>
+    </div>
+  </a>
+  <a href="{% url 'product_list' %}?category=Women" class="gender-tile">
+    <img src="https://images.unsplash.com/photo-1653651460770-73513a4b25a5?w=900&h=1100&fit=crop&auto=format" alt="Woman wearing a rose gold watch" />
+    <div class="overlay"></div>
+    <div class="caption">
+      <p class="mono" style="font-size:10px; letter-spacing:0.4em; text-transform:uppercase; opacity:0.75;">Watches</p>
+      <h3><em>For Her</em></h3>
+      <span class="mono" style="font-size:0.85rem; letter-spacing:0.15em; text-transform:uppercase; border-bottom:1px solid rgba(247,244,239,0.6); padding-bottom:2px;">Shop Now →</span>
+    </div>
+  </a>
+</section>
+
+<section class="section" id="collections">
+  <div style="display:flex; align-items:flex-end; justify-content:space-between; margin-bottom: 3rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <p class="eyebrow"><span class="gold-line"></span>Timepieces</p>
+      <h2 style="font-size: 2.75rem;">The 2025 <em>Collection</em></h2>
+    </div>
+    <a href="{% url 'product_list' %}" class="btn-link">View all timepieces →</a>
+  </div>
+
+  <p class="mono" style="font-size:11px; letter-spacing:0.3em; text-transform:uppercase; color: var(--accent); margin-bottom:1rem;">For Him</p>
+  <div class="product-grid" style="margin-bottom: 3rem;">
+    {% for product in men %}{% include "store/_product_card.html" %}{% endfor %}
+  </div>
+
+  <p class="mono" style="font-size:11px; letter-spacing:0.3em; text-transform:uppercase; color: var(--accent); margin-bottom:1rem;">For Her</p>
+  <div class="product-grid">
+    {% for product in women %}{% include "store/_product_card.html" %}{% endfor %}
+  </div>
+</section>
+
+<section id="story" class="section" style="border-top: 1px solid var(--border);">
+  <h2 style="font-size: 2.5rem; margin-bottom: 1.5rem;">Four generations of <em>uncompromised</em> precision</h2>
+  <p style="color: var(--muted-foreground); max-width: 40rem; line-height: 1.8;">
+    In 1887, Ratanlal Doshi assembled his first pocket watch in a small workshop overlooking the Arabian Sea. Today, twelve master watchmakers share that same atelier in Andheri, each responsible for a single timepiece from raw brass blank to the moment the caseback is sealed.
+  </p>
+</section>
+
+<script>
+  const slides = document.querySelectorAll('.hero-slide-img');
+  const texts = document.querySelectorAll('.hero-slide-text');
+  const dots = document.querySelectorAll('.hero-dot');
+  let current = 0;
+
+  function goToSlide(i) {
+    current = i;
+    slides.forEach(s => s.style.opacity = s.dataset.index == i ? 0.55 : 0);
+    texts.forEach(t => t.style.display = t.dataset.index == i ? 'block' : 'none');
+    dots.forEach(d => {
+      const active = d.dataset.index == i;
+      d.style.width = active ? '22px' : '7px';
+      d.style.background = active ? 'var(--accent)' : 'var(--border)';
+    });
+  }
+
+  setInterval(() => goToSlide((current + 1) % slides.length), 6000);
+</script>
+{% endblock %}

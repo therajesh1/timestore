@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}{% if is_new %}Add Product{% else %}Edit Product{% endif %} · The Time Store{% endblock %}
+{% block content %}
+<section class="section" style="max-width: 720px;">
+  <p class="eyebrow"><span class="gold-line"></span>Admin</p>
+  <h2 style="font-size: 2.75rem; margin-bottom: 2rem;">
+    {% if is_new %}Add <em>Product</em>{% else %}Edit <em>{{ product.name }}</em>{% endif %}
+  </h2>
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {% if form.non_field_errors %}<p class="form-errors">{{ form.non_field_errors|striptags }}</p>{% endif %}
+
+    <div class="card-panel" style="margin-bottom: 1.5rem;">
+      <p class="mono" style="font-size:0.75rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent); margin-bottom:1.25rem;">Product Details</p>
+
+      <div class="form-field">{{ form.ref.label_tag }}{{ form.ref }}{% if form.ref.errors %}<p class="form-errors">{{ form.ref.errors|striptags }}</p>{% endif %}</div>
+      <div class="form-field">{{ form.ean_code.label_tag }}{{ form.ean_code }}</div>
+      <div class="form-field">{{ form.name.label_tag }}{{ form.name }}{% if form.name.errors %}<p class="form-errors">{{ form.name.errors|striptags }}</p>{% endif %}</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+        <div class="form-field">{{ form.model_number.label_tag }}{{ form.model_number }}</div>
+        <div class="form-field">{{ form.tts_model.label_tag }}{{ form.tts_model }}</div>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+        <div class="form-field">
+          {{ form.brand.label_tag }}{{ form.brand }}
+          <a href="{% url 'brand_manage_list' %}" class="btn-link" style="display:inline-block; margin-top:0.4rem; font-size:0.75rem;">+ New brand</a>
+        </div>
+        <div class="form-field">
+          {{ form.sub_brand.label_tag }}{{ form.sub_brand }}
+          <a href="{% url 'brand_manage_list' %}" class="btn-link" style="display:inline-block; margin-top:0.4rem; font-size:0.75rem;">+ New sub-brand</a>
+        </div>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+        <div class="form-field">{{ form.category.label_tag }}{{ form.category }}</div>
+        <div class="form-field">{{ form.product_type.label_tag }}{{ form.product_type }}</div>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+        <div class="form-field">{{ form.colour.label_tag }}{{ form.colour }}</div>
+        <div class="form-field">{{ form.collection.label_tag }}{{ form.collection }}</div>
+      </div>
+      <div class="form-field">{{ form.tagline.label_tag }}{{ form.tagline }}</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+        <div class="form-field">
+          {{ form.image.label_tag }}{{ form.image }}
+          {% if product and product.image %}<p class="mono" style="font-size:0.75rem; color:var(--muted-foreground); margin-top:0.35rem;">Current: {{ product.image.name }}</p>{% endif %}
+        </div>
+        <div class="form-field">{{ form.image_url.label_tag }}{{ form.image_url }}</div>
+      </div>
+    </div>
+
+    <div class="card-panel" style="margin-bottom: 1.5rem;">
+      <p class="mono" style="font-size:0.75rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent); margin-bottom:1.25rem;">Pricing &amp; Tax</p>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+        <div class="form-field">{{ form.mrp.label_tag }}{{ form.mrp }}</div>
+        <div class="form-field">{{ form.price.label_tag }}{{ form.price }}{% if form.price.errors %}<p class="form-errors">{{ form.price.errors|striptags }}</p>{% endif %}</div>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+        <div class="form-field">{{ form.gst_percent.label_tag }}{{ form.gst_percent }}</div>
+        <div class="form-field">{{ form.hsn_code.label_tag }}{{ form.hsn_code }}</div>
+      </div>
+      <div class="form-field">{{ form.min_qty.label_tag }}{{ form.min_qty }}</div>
+    </div>
+
+    <div class="card-panel" style="margin-bottom: 2rem;">
+      <p class="mono" style="font-size:0.75rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent); margin-bottom:1.25rem;">Inventory &amp; Notes</p>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+        <div class="form-field">{{ form.stock.label_tag }}{{ form.stock }}</div>
+        <div class="form-field" style="display:flex; align-items:center; gap:0.5rem; margin-top:1.6rem;">
+          {{ form.featured }}{{ form.featured.label_tag }}
+        </div>
+      </div>
+      <div class="form-field">{{ form.description.label_tag }}{{ form.description }}</div>
+      <div class="form-field">{{ form.remark.label_tag }}{{ form.remark }}</div>
+    </div>
+
+    <div style="display:flex; gap:1rem;">
+      <button type="submit" class="btn btn-accent">{% if is_new %}Add Product{% else %}Save Changes{% endif %}</button>
+      <a href="{% url 'product_manage_list' %}" class="btn btn-outline">Cancel</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

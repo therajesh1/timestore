@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Checkout · The Time Store{% endblock %}
+{% block content %}
+<section class="section" style="max-width: 700px;">
+  <p class="eyebrow"><span class="gold-line"></span>Checkout</p>
+  <h2 style="font-size: 2.75rem; margin-bottom: 2.5rem;">Complete your <em>order</em></h2>
+
+  <div class="card-panel" style="margin-bottom: 2rem;">
+    <table class="data-table">
+      {% for item in cart %}
+        <tr>
+          <td>{{ item.product.name }} × {{ item.quantity }}</td>
+          <td class="mono" style="text-align:right;">₹{{ item.line_total|floatformat:0 }}</td>
+        </tr>
+      {% endfor %}
+      <tr>
+        <td style="font-weight:600;">Total</td>
+        <td class="mono" style="text-align:right; color:var(--accent); font-size:1.1rem;">₹{{ cart.total|floatformat:0 }}</td>
+      </tr>
+    </table>
+  </div>
+
+  <form method="post" class="card-panel">
+    {% csrf_token %}
+    <div class="form-field">
+      <label for="{{ form.shipping_address.id_for_label }}">{{ form.shipping_address.label }}</label>
+      {{ form.shipping_address }}
+      {% if form.shipping_address.errors %}<p class="form-errors">{{ form.shipping_address.errors|striptags }}</p>{% endif %}
+    </div>
+    <button type="submit" class="btn btn-accent" style="width:100%; justify-content:center;">Place Order</button>
+  </form>
+</section>
+{% endblock %}

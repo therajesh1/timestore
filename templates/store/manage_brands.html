@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Manage Brands · The Time Store{% endblock %}
+{% block content %}
+<section class="section">
+  <p class="eyebrow"><span class="gold-line"></span>Admin</p>
+  <h2 style="font-size: 2.75rem; margin-bottom: 2rem;">Manage <em>Brands</em></h2>
+
+  <div class="card-panel" style="margin-bottom: 2.5rem; max-width: 480px;">
+    <p class="mono" style="font-size:0.75rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent); margin-bottom:1.25rem;">Add a New Brand</p>
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="form-field">{{ form.name.label_tag }}{{ form.name }}{% if form.name.errors %}<p class="form-errors">{{ form.name.errors|striptags }}</p>{% endif %}</div>
+      <div class="form-field">{{ form.logo.label_tag }}{{ form.logo }}</div>
+      <div class="form-field">{{ form.logo_static.label_tag }}{{ form.logo_static }}</div>
+      <div class="form-field" style="display:flex; align-items:center; gap:0.5rem;">{{ form.show_in_nav }}{{ form.show_in_nav.label_tag }}</div>
+      <div class="form-field">{{ form.order.label_tag }}{{ form.order }}</div>
+      <button type="submit" class="btn btn-accent">Add Brand</button>
+    </form>
+  </div>
+
+  <div style="overflow-x:auto;">
+    <table class="data-table">
+      <thead><tr><th>Logo</th><th>Brand</th><th>Sub-brands</th><th>In Navbar</th><th>Products</th><th></th></tr></thead>
+      <tbody>
+        {% for brand in brands %}
+          <tr>
+            <td>
+              <span style="width:32px; height:32px; border-radius:50%; background:var(--secondary); display:inline-flex; align-items:center; justify-content:center; overflow:hidden;">
+                {% if brand.display_logo %}<img src="{{ brand.display_logo }}" alt="{{ brand.name }}" style="width:100%; height:100%; object-fit:cover;" />
+                {% elif brand.logo_static %}<img src="{% static brand.logo_static %}" alt="{{ brand.name }}" style="width:100%; height:100%; object-fit:cover;" />{% endif %}
+              </span>
+            </td>
+            <td>{{ brand.name }}</td>
+            <td>{{ brand.sub_brands.count }}</td>
+            <td>{% if brand.show_in_nav %}✓{% else %}—{% endif %}</td>
+            <td>{{ brand.products.count }}</td>
+            <td><a href="{% url 'brand_detail' brand.pk %}" class="btn-link">Manage →</a></td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6" style="color:var(--muted-foreground);">No brands yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

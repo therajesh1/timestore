@@ -1,0 +1,11 @@
+<div class="product-card">
+  <a href="{% url 'product_detail' product.pk %}" class="thumb">
+    <img src="{{ product.display_image }}" alt="{{ product.name }}" />
+    <span class="ref mono">{{ product.ref }}</span>
+  </a>
+  <div class="info">
+    <p class="tagline mono">{{ product.tagline }}</p>
+    <h3 class="name"><a href="{% url 'product_detail' product.pk %}">{{ product.name }}</a></h3>
+    <p class="price mono">{{ product.formatted_price }}</p>
+  </div>
+</div>

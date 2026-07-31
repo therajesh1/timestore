@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}{{ product.name }} · The Time Store{% endblock %}
+{% block content %}
+<section class="section">
+  <div style="display:grid; grid-template-columns: 1fr; gap: 3rem;" class="product-detail-grid">
+    <div class="thumb" style="aspect-ratio: 4/5; background:#EDE9E1; overflow:hidden;">
+      <img src="{{ product.display_image }}" alt="{{ product.name }}" style="width:100%; height:100%; object-fit:cover;" />
+    </div>
+    <div>
+      <p class="mono" style="font-size:9px; letter-spacing:0.3em; text-transform:uppercase; color:var(--muted-foreground);">{{ product.ref }} · {{ product.tagline }}</p>
+      <h1 style="font-size: 2.75rem; margin: 0.75rem 0 1.25rem;">{{ product.name }}</h1>
+      <p class="mono" style="font-size:1.5rem; color: var(--accent); margin-bottom: 1.5rem;">{{ product.formatted_price }}</p>
+      {% if product.description %}
+        <p style="color: var(--muted-foreground); line-height: 1.8; margin-bottom: 2rem;">{{ product.description }}</p>
+      {% endif %}
+
+      {% if product.stock > 0 %}
+        <form method="post" action="{% url 'cart_add' product.pk %}">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{% url 'product_detail' product.pk %}" />
+          <button type="submit" class="btn btn-accent">
+            Add to Cart
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+          </button>
+        </form>
+        <p class="helptext" style="margin-top:0.75rem;">{{ product.stock }} in stock</p>
+      {% else %}
+        <p class="mono" style="color:#B3261E; text-transform:uppercase; letter-spacing:0.1em; font-size:0.85rem;">Out of stock</p>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if related %}
+    <div style="margin-top: 5rem;">
+      <p class="eyebrow"><span class="gold-line"></span>You may also like</p>
+      <div class="product-grid">
+        {% for product in related %}{% include "store/_product_card.html" %}{% endfor %}
+      </div>
+    </div>
+  {% endif %}
+</section>
+
+<style>
+  @media (min-width: 768px) {
+    .product-detail-grid { grid-template-columns: 1fr 1fr !important; }
+  }
+</style>
+{% endblock %}

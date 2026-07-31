@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ brand.name }} · Manage Brand{% endblock %}
+{% block content %}
+<section class="section" style="max-width: 640px;">
+  <p class="eyebrow"><span class="gold-line"></span>Admin</p>
+  <h2 style="font-size: 2.5rem; margin-bottom: 2rem;">{{ brand.name }}</h2>
+
+  <div class="card-panel" style="margin-bottom: 2rem;">
+    <p class="mono" style="font-size:0.75rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent); margin-bottom:1.25rem;">Brand Details</p>
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="form-field">{{ form.name.label_tag }}{{ form.name }}</div>
+      <div class="form-field">
+        {{ form.logo.label_tag }}{{ form.logo }}
+        {% if brand.logo %}<p class="mono" style="font-size:0.75rem; color:var(--muted-foreground); margin-top:0.35rem;">Current: {{ brand.logo.name }}</p>{% endif %}
+      </div>
+      <div class="form-field">{{ form.logo_static.label_tag }}{{ form.logo_static }}</div>
+      <div class="form-field" style="display:flex; align-items:center; gap:0.5rem;">{{ form.show_in_nav }}{{ form.show_in_nav.label_tag }}</div>
+      <div class="form-field">{{ form.order.label_tag }}{{ form.order }}</div>
+      <button type="submit" name="save_brand" class="btn btn-accent">Save Changes</button>
+    </form>
+  </div>
+
+  <div class="card-panel" style="margin-bottom: 2rem;">
+    <p class="mono" style="font-size:0.75rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent); margin-bottom:1.25rem;">Sub-brands</p>
+    {% if sub_brands %}
+      <table class="data-table" style="margin-bottom:1.5rem;">
+        <tbody>
+          {% for sb in sub_brands %}
+            <tr>
+              <td>{{ sb.name }}</td>
+              <td style="text-align:right;">
+                <form method="post" action="{% url 'subbrand_delete' sb.pk %}" style="display:inline;">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-link" style="color:#B3261E; border-color:#B3261E; background:none; cursor:pointer;">Remove</button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p style="color:var(--muted-foreground); margin-bottom:1.5rem;">No sub-brands yet.</p>
+    {% endif %}
+
+    <form method="post" style="display:flex; gap:1rem; align-items:flex-start;">
+      {% csrf_token %}
+      <div class="form-field" style="flex:1; margin-bottom:0;">{{ subbrand_form.name }}</div>
+      <button type="submit" class="btn btn-outline">+ Add Sub-brand</button>
+    </form>
+  </div>
+
+  <a href="{% url 'brand_manage_list' %}" class="btn-link">← Back to Brands</a>
+</section>
+{% endblock %}

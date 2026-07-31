@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · The Time Store{% endblock %}
+{% block content %}
+<section class="section">
+  <p class="eyebrow"><span class="gold-line"></span>Admin</p>
+  <h2 style="font-size: 2.75rem; margin-bottom: 2.5rem;">Store <em>Dashboard</em></h2>
+
+  <div class="stat-grid">
+    <div class="stat-card">
+      <p class="value">{{ product_count }}</p>
+      <p class="label mono">Total Products</p>
+    </div>
+    <div class="stat-card">
+      <p class="value">{{ men_count }} / {{ women_count }}</p>
+      <p class="label mono">Men / Women</p>
+    </div>
+    <div class="stat-card">
+      <p class="value">{{ order_count }}</p>
+      <p class="label mono">Total Orders</p>
+    </div>
+    <div class="stat-card">
+      <p class="value">₹{{ revenue|floatformat:0 }}</p>
+      <p class="label mono">Revenue</p>
+    </div>
+  </div>
+
+  <div style="display:flex; gap:1rem; margin-bottom: 3rem; flex-wrap:wrap;">
+    <a href="{% url 'product_manage_list' %}" class="btn btn-outline">Manage Products →</a>
+    <a href="{% url 'product_create' %}" class="btn btn-outline">Add Product →</a>
+    <a href="{% url 'brand_manage_list' %}" class="btn btn-outline">Manage Brands →</a>
+    <a href="{% url 'order_manage_list' %}" class="btn btn-outline">Manage Orders →</a>
+  </div>
+
+  <p class="eyebrow"><span class="gold-line"></span>Recent Orders</p>
+  <table class="data-table" style="margin-bottom: 3rem;">
+    <thead><tr><th>Order</th><th>Customer</th><th>Status</th><th>Total</th><th>Date</th></tr></thead>
+    <tbody>
+      {% for order in recent_orders %}
+        <tr>
+          <td>#{{ order.id }}</td>
+          <td>{{ order.user.username }}</td>
+          <td class="mono">{{ order.status }}</td>
+          <td class="mono">{{ order.formatted_total }}</td>
+          <td>{{ order.created_at|date:"d M Y" }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="5" style="color:var(--muted-foreground);">No orders yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if low_stock %}
+    <p class="eyebrow"><span class="gold-line"></span>Low Stock</p>
+    <table class="data-table">
+      <thead><tr><th>Product</th><th>Category</th><th>Stock</th></tr></thead>
+      <tbody>
+        {% for product in low_stock %}
+          <tr>
+            <td><a href="{% url 'product_update' product.pk %}">{{ product.name }}</a></td>
+            <td>{{ product.category }}</td>
+            <td class="mono" style="color:#B3261E;">{{ product.stock }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+</section>
+{% endblock %}

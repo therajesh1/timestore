@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Sign In · The Time Store{% endblock %}
+{% block content %}
+<section class="section" style="max-width: 460px;">
+  <p class="eyebrow"><span class="gold-line"></span>Account</p>
+  <h2 style="font-size: 2.5rem; margin-bottom: 2rem;">Sign <em>In</em></h2>
+
+  <form method="post" class="card-panel">
+    {% csrf_token %}
+    {% for field in form %}
+      <div class="form-field">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}<p class="form-errors">{{ field.errors|striptags }}</p>{% endif %}
+      </div>
+    {% endfor %}
+    {% if form.non_field_errors %}<p class="form-errors">{{ form.non_field_errors|striptags }}</p>{% endif %}
+    <input type="hidden" name="next" value="{{ next }}" />
+    <button type="submit" class="btn btn-accent" style="width:100%; justify-content:center;">Sign In</button>
+  </form>
+  <p style="margin-top: 1.5rem; color: var(--muted-foreground); font-size: 0.9rem;">
+    New here? <a href="{% url 'register' %}" style="color: var(--primary); border-bottom: 1px solid var(--border);">Create an account</a>
+  </p>
+</section>
+{% endblock %}

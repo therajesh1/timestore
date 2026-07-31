@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Your Cart · The Time Store{% endblock %}
+{% block content %}
+<section class="section">
+  <p class="eyebrow"><span class="gold-line"></span>Bag</p>
+  <h2 style="font-size: 2.75rem; margin-bottom: 2.5rem;">Your <em>Cart</em></h2>
+
+  {% if cart|length > 0 %}
+    <table class="data-table">
+      <thead>
+        <tr><th>Item</th><th>Reference</th><th>Price</th><th>Qty</th><th>Total</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for item in cart %}
+          <tr>
+            <td style="display:flex; align-items:center; gap:1rem;">
+              <img src="{{ item.product.display_image }}" alt="{{ item.product.name }}" style="width:56px; height:70px; object-fit:cover;" />
+              <a href="{% url 'product_detail' item.product.pk %}">{{ item.product.name }}</a>
+            </td>
+            <td class="mono">{{ item.product.ref }}</td>
+            <td class="mono">{{ item.product.formatted_price }}</td>
+            <td>{{ item.quantity }}</td>
+            <td class="mono">₹{{ item.line_total|floatformat:0 }}</td>
+            <td>
+              <form method="post" action="{% url 'cart_remove' item.product.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn-link" style="border:none; background:none; cursor:pointer;">Remove</button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div style="display:flex; justify-content:flex-end; margin-top: 2rem; gap: 2rem; align-items:center;">
+      <p class="mono" style="font-size:1.25rem;">Total: <span style="color:var(--accent);">₹{{ cart.total|floatformat:0 }}</span></p>
+      <a href="{% url 'checkout' %}" class="btn btn-accent">Proceed to Checkout →</a>
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <p style="margin-bottom: 1.5rem;">Your cart is empty.</p>
+      <a href="{% url 'product_list' %}" class="btn btn-accent">Explore Collection</a>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}
