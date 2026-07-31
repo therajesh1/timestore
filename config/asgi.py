@@ -8,9 +8,23 @@ https://docs.djangoproject.com/en/5.2/howto/deployment/asgi/
 """
 
 import os
-
+import django
 from django.core.asgi import get_asgi_application
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+
+# Initialize Django and run database setup automatically
+try:
+    django.setup()
+    from django.core.management import call_command
+    print("Running database migrations...")
+    call_command('migrate', interactive=False)
+    print("Seeding database (brands)...")
+    call_command('seed_brands', interactive=False)
+    print("Seeding database (products)...")
+    call_command('seed_products', interactive=False)
+    print("Database setup completed successfully.")
+except Exception as e:
+    print(f"Error running database setup during ASGI initialization: {e}")
 
 application = get_asgi_application()
