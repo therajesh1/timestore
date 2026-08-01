@@ -151,5 +151,57 @@
       <a href="{% url 'product_manage_list' %}" class="btn btn-outline">Cancel</a>
     </div>
   </form>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      var brand = document.getElementById("id_brand");
+      var gender = document.getElementById("id_gender");
+      var model = document.getElementById("id_model_number");
+      var colour = document.getElementById("id_colour");
+      var nameInput = document.getElementById("id_name");
+
+      function updateProductName() {
+        if (!nameInput) return;
+
+        var brandText = "";
+        if (brand && brand.selectedIndex >= 0) {
+          brandText = brand.options[brand.selectedIndex].text;
+          if (brandText.includes("---")) {
+            brandText = "";
+          }
+        }
+
+        var genderText = "";
+        if (gender) {
+          var val = gender.value;
+          if (val === "Men") {
+            genderText = "Men's";
+          } else if (val === "Women") {
+            genderText = "Women's";
+          } else if (val === "Unisex") {
+            genderText = "Unisex";
+          }
+        }
+
+        var modelText = model ? model.value.trim() : "";
+        var colourText = colour ? colour.value.trim() : "";
+
+        var parts = [];
+        if (brandText) parts.push(brandText);
+        if (genderText) parts.push(genderText);
+        if (modelText) parts.push(modelText);
+        if (colourText) parts.push(colourText);
+
+        nameInput.value = parts.join(" ");
+      }
+
+      if (brand && gender && model && colour) {
+        [brand, gender, model, colour].forEach(function (el) {
+          el.addEventListener("input", updateProductName);
+          el.addEventListener("change", updateProductName);
+        });
+      }
+    });
+  </script>
 </section>
 {% endblock %}
