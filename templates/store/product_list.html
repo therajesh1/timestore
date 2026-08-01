@@ -2,21 +2,33 @@
 {% block content %}
 <section class="section">
   <div style="margin-bottom: 2rem;">
-    <p class="eyebrow"><span class="gold-line"></span>Timepieces</p>
-    <h2 style="font-size: 2.75rem;">
-      {% if selected_brand %}{{ selected_brand.name }}{% elif query %}Results for "{{ query }}"{% else %}All <em>Timepieces</em>{% endif %}
-    </h2>
-    {% if selected_brand %}
-      <p style="margin-top: 0.5rem;"><a href="{% url 'product_list' %}" class="btn-link">Clear brand filter ×</a></p>
+    {% if not category %}
+      <p class="eyebrow"><span class="gold-line"></span>Timepieces</p>
+      <h2 style="font-size: 2.75rem;">
+        {% if selected_brand %}{{ selected_brand.name }}{% elif query %}Results for "{{ query }}"{% else %}All <em>Timepieces</em>{% endif %}
+      </h2>
+      {% if selected_brand %}
+        <p style="margin-top: 0.5rem;"><a href="{% url 'product_list' %}" class="btn-link">Clear brand filter ×</a></p>
+      {% endif %}
+    {% else %}
+      <p class="eyebrow"><span class="gold-line"></span>{{ category }}</p>
+      <h2 style="font-size: 2.75rem;">
+        {% if selected_brand %}{{ selected_brand.name }}{% else %}{{ category }}{% endif %}
+      </h2>
+      {% if selected_brand %}
+        <p style="margin-top: 0.5rem;"><a href="{% url 'product_list' %}?category={{ category }}" class="btn-link">Clear brand filter ×</a></p>
+      {% endif %}
     {% endif %}
   </div>
 
-  <div class="filter-bar">
-    <a href="{% url 'product_list' %}" class="{% if not category and not selected_brand %}active{% endif %}">All Items</a>
-    {% for cat in categories %}
-      <a href="{% url 'product_list' %}?category={{ cat }}" class="{% if category == cat %}active{% endif %}">{{ cat }}</a>
-    {% endfor %}
-  </div>
+  {% if not category %}
+    <div class="filter-bar">
+      <a href="{% url 'product_list' %}" class="{% if not category and not selected_brand %}active{% endif %}">All Items</a>
+      {% for cat in categories %}
+        <a href="{% url 'product_list' %}?category={{ cat }}" class="{% if category == cat %}active{% endif %}">{{ cat }}</a>
+      {% endfor %}
+    </div>
+  {% endif %}
 
   {% if products %}
     <div class="product-grid">

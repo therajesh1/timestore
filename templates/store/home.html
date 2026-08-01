@@ -10,8 +10,8 @@
     <div class="hero-gradient"></div>
   </div>
 
-  <div class="hero-content" style="display:flex; align-items:flex-end; min-height: 55vh; flex-wrap: wrap; gap: 3rem;">
-    <div style="flex: 1; min-width: 320px;">
+  <div class="hero-content" style="display:flex; align-items:flex-end; min-height: 55vh; padding: 4rem 1.5rem;">
+    <div style="width: 100%; max-width: 650px;">
       {% for slide in hero_slides %}
         <div class="hero-slide-text" data-index="{{ forloop.counter0 }}" style="{% if not forloop.first %}display:none;{% endif %}">
           <p class="eyebrow"><span class="gold-line"></span>{{ slide.eyebrow }}</p>
@@ -24,16 +24,6 @@
             </a>
             <a href="#story" class="btn-link">Our Heritage</a>
           </div>
-        </div>
-      {% endfor %}
-    </div>
-
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1px; border-top: 1px solid var(--border); flex: 1; min-width: 320px;">
-      {% for f in features %}
-        <div style="padding-top: 1.5rem; padding-right: 1.5rem;">
-          <p class="mono" style="font-size:10px; letter-spacing:0.3em; text-transform:uppercase; color: var(--muted-foreground); margin-bottom: 0.5rem;">{{ f.label }}</p>
-          <p class="serif" style="font-size: 1.75rem; color: var(--accent);">{{ f.value }}</p>
-          {% if f.unit %}<p class="mono" style="font-size:10px; color: var(--muted-foreground);">{{ f.unit }}</p>{% endif %}
         </div>
       {% endfor %}
     </div>
