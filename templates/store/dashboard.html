@@ -10,12 +10,8 @@
       <p class="value">{{ product_count }}</p>
       <p class="label mono">Total Products</p>
     </div>
-    <div class="stat-card" style="grid-column: span 2;">
-      <p class="value" style="font-size: 1rem; font-family: 'JetBrains Mono', monospace; font-weight: 500; margin-top: 0.6rem; line-height: 1.6;">
-        {% for cat, count in category_counts.items %}
-          {{ cat }}: <span style="color:var(--accent);">{{ count }}</span>{% if not forloop.last %} &nbsp;·&nbsp; {% endif %}
-        {% endfor %}
-      </p>
+    <div class="stat-card">
+      <p class="value">{{ category_counts|length }}</p>
       <p class="label mono">Categories</p>
     </div>
     <div class="stat-card">
@@ -26,6 +22,12 @@
       <p class="value">₹{{ revenue|floatformat:0 }}</p>
       <p class="label mono">Revenue</p>
     </div>
+  </div>
+
+  <div style="display:flex; justify-content:center; gap:1.25rem; margin-top:-2.25rem; margin-bottom:3rem; flex-wrap:wrap; font-size:11px; letter-spacing:0.05em; color:var(--muted-foreground);" class="mono">
+    {% for cat, count in category_counts.items %}
+      <span>{{ cat }}: <strong style="color:var(--accent);">{{ count }}</strong></span>{% if not forloop.last %}<span style="color:var(--border);">|</span>{% endif %}
+    {% endfor %}
   </div>
 
   <div style="display:flex; gap:1rem; margin-bottom: 3rem; flex-wrap:wrap;">
