@@ -5,7 +5,7 @@
   <p class="eyebrow"><span class="gold-line"></span>Admin</p>
   <h2 style="font-size: 2.75rem; margin-bottom: 2.5rem;">Store <em>Dashboard</em></h2>
 
-  <div class="stat-grid">
+  <div class="stat-grid" style="grid-template-columns: repeat(2, 1fr); max-width: 600px; margin: 0 auto 3rem;">
     <div class="stat-card">
       <p class="value">{{ product_count }}</p>
       <p class="label mono">Total Products</p>
@@ -13,14 +13,6 @@
     <div class="stat-card">
       <p class="value">{{ category_counts|length }}</p>
       <p class="label mono">Categories</p>
-    </div>
-    <div class="stat-card">
-      <p class="value">{{ order_count }}</p>
-      <p class="label mono">Total Orders</p>
-    </div>
-    <div class="stat-card">
-      <p class="value">₹{{ revenue|floatformat:0 }}</p>
-      <p class="label mono">Revenue</p>
     </div>
   </div>
 

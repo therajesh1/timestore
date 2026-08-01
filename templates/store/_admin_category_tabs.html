@@ -1,6 +1,9 @@
-<div class="filter-bar" style="margin-bottom:2rem;">
-  <a href="{{ base_url }}" class="{% if not selected_category %}active{% endif %}">All</a>
-  {% for value, label in categories %}
-    <a href="{{ base_url }}?category={{ value|urlencode }}" class="{% if selected_category == value %}active{% endif %}">{{ label }}</a>
-  {% endfor %}
+<div class="form-field" style="margin-bottom: 2rem; max-width: 320px;">
+  <label for="adminCategorySelect" class="mono" style="font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); display: block; margin-bottom: 0.5rem;">Select Category</label>
+  <select id="adminCategorySelect" onchange="location = this.value;" style="width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: 4px; background: var(--card); color: var(--foreground); font-family: inherit; font-size: 0.9rem; cursor: pointer; outline: none; transition: border-color 0.2s;">
+    <option value="{{ base_url }}" {% if not selected_category %}selected{% endif %}>All Categories</option>
+    {% for value, label in categories %}
+      <option value="{{ base_url }}?category={{ value|urlencode }}" {% if selected_category == value %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
 </div>

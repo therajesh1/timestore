@@ -82,6 +82,13 @@ class Product(models.Model):
     strap_color = models.CharField("Strap Color", max_length=120, blank=True, default="")
     dial_color = models.CharField("Dial Color", max_length=120, blank=True, default="")
     case_material = models.CharField("Case Material", max_length=120, blank=True, default="")
+    case_size = models.CharField("Case Size", max_length=80, blank=True, default="")
+    gender = models.CharField(
+        "Gender",
+        max_length=20,
+        choices=[("Men", "Men"), ("Women", "Women"), ("Unisex", "Unisex")],
+        default="Unisex"
+    )
     features = models.TextField("Features", blank=True, default="", help_text="e.g. fragrance notes, key highlights")
 
     # Pricing & tax

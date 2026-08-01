@@ -185,6 +185,8 @@ SIMPLE_CATEGORIES = {
     Product.Category.WALL_CLOCKS,
     Product.Category.PERFUMES,
     Product.Category.ACCESSORIES,
+    Product.Category.SMART_WATCHS,
+    Product.Category.KIDS,
 }
 
 

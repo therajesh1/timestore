@@ -27,7 +27,7 @@
       </div>
     {% endif %}
 
-    {% if selected_category == "Wall Clocks" or selected_category == "Perfumes" or selected_category == "Accessories" %}
+    {% if selected_category != "Wrist Watch" %}
       <input type="hidden" name="category" value="{{ selected_category }}" />
 
       <div class="card-panel" style="margin-bottom: 1.5rem;">
@@ -39,9 +39,18 @@
         </div>
         <div class="form-field">{{ form.name.label_tag }}{{ form.name }}{% if form.name.errors %}<p class="form-errors">{{ form.name.errors|striptags }}</p>{% endif %}</div>
         <div class="form-field">{{ form.description.label_tag }}{{ form.description }}</div>
-        {% if selected_category == "Perfumes" %}
-          <div class="form-field">{{ form.features.label_tag }}{{ form.features }}</div>
-        {% endif %}
+        <div class="form-field">{{ form.features.label_tag }}{{ form.features }}</div>
+      </div>
+
+      <div class="card-panel" style="margin-bottom: 1.5rem;">
+        <p class="mono" style="font-size:0.75rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent); margin-bottom:1.25rem;">Images</p>
+        <div class="form-row">
+          <div class="form-field">
+            {{ form.image.label_tag }}{{ form.image }}
+            {% if product and product.image %}<p class="mono" style="font-size:0.75rem; color:var(--muted-foreground); margin-top:0.35rem;">Current: {{ product.image.name }}</p>{% endif %}
+          </div>
+          <div class="form-field">{{ form.image_url.label_tag }}{{ form.image_url }}</div>
+        </div>
       </div>
 
       <div class="card-panel" style="margin-bottom: 2rem;">
@@ -51,6 +60,7 @@
     {% else %}
       <div class="card-panel" style="margin-bottom: 1.5rem;">
         <p class="mono" style="font-size:0.75rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent); margin-bottom:1.25rem;">Product Details</p>
+        <input type="hidden" name="category" value="{{ selected_category }}" />
 
         <div class="form-field">
           <label>Product ID / ref. code</label>
@@ -73,9 +83,8 @@
             <a href="{% url 'brand_manage_list' %}" class="btn-link" style="display:inline-block; margin-top:0.4rem; font-size:0.75rem;">+ New sub-brand</a>
           </div>
         </div>
-        <div class="form-row">
-          <div class="form-field">{{ form.category.label_tag }}{{ form.category }}</div>
-          <div class="form-field">{{ form.product_type.label_tag }}{{ form.product_type }}</div>
+        <div class="form-field">
+          {{ form.product_type.label_tag }}{{ form.product_type }}
         </div>
         <div class="form-row">
           <div class="form-field">{{ form.colour.label_tag }}{{ form.colour }}</div>
@@ -105,7 +114,11 @@
           <div class="form-field">{{ form.strap_material.label_tag }}{{ form.strap_material }}</div>
           <div class="form-field">{{ form.strap_color.label_tag }}{{ form.strap_color }}</div>
         </div>
-        <div class="form-field">{{ form.dial_color.label_tag }}{{ form.dial_color }}</div>
+        <div class="form-row">
+          <div class="form-field">{{ form.dial_color.label_tag }}{{ form.dial_color }}</div>
+          <div class="form-field">{{ form.case_size.label_tag }}{{ form.case_size }}</div>
+        </div>
+        <div class="form-field">{{ form.gender.label_tag }}{{ form.gender }}</div>
       </div>
 
       <div class="card-panel" style="margin-bottom: 1.5rem;">

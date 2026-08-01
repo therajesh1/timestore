@@ -22,7 +22,7 @@ class ProductForm(forms.ModelForm):
     # Every field NOT in this set is deleted from the form so it's left untouched on
     # save (rather than being explicitly cleared, which would happen if it stayed in
     # the form as an empty, unrendered field).
-    SIMPLE_FIELDS = {"ref", "name", "description", "price", "category", "features"}
+    SIMPLE_FIELDS = {"ref", "name", "description", "price", "category", "features", "image", "image_url"}
 
     class Meta:
         model = Product
@@ -35,6 +35,7 @@ class ProductForm(forms.ModelForm):
             "stock", "featured", "remark",
             "warranty_period", "glass_material", "strap_material",
             "movement", "strap_color", "dial_color", "case_material", "features",
+            "gender", "case_size",
         ]
         widgets = {
             "description": forms.Textarea(attrs={"rows": 3}),

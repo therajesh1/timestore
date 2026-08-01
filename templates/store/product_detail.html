@@ -80,6 +80,18 @@
               <td style="text-align: right; font-weight: 500;">{{ product.case_material }}</td>
             </tr>
             {% endif %}
+            {% if product.case_size %}
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+              <td style="color: var(--muted-foreground); padding: 0.5rem 0;">Case Size</td>
+              <td style="text-align: right; font-weight: 500;">{{ product.case_size }}</td>
+            </tr>
+            {% endif %}
+            {% if product.gender %}
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+              <td style="color: var(--muted-foreground); padding: 0.5rem 0;">Gender</td>
+              <td style="text-align: right; font-weight: 500;">{{ product.gender }}</td>
+            </tr>
+            {% endif %}
           </tbody>
         </table>
       </div>
