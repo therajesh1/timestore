@@ -46,6 +46,7 @@ class ProductForm(forms.ModelForm):
     def __init__(self, *args, simple=False, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["ref"].disabled = True
+        self.fields["ref"].required = False
         self.fields["ref"].help_text = "Auto-generated from the product count."
         if simple:
             for name in list(self.fields):
