@@ -77,8 +77,8 @@
           <tr>
             <td>
               <span style="width:32px; height:32px; border-radius:50%; background:var(--secondary); display:inline-flex; align-items:center; justify-content:center; overflow:hidden;">
-                {% if brand.display_logo %}<img src="{{ brand.display_logo }}" alt="{{ brand.name }}" style="width:100%; height:100%; object-fit:cover;" />
-                {% elif brand.logo_static %}<img src="{% static brand.logo_static %}" alt="{{ brand.name }}" style="width:100%; height:100%; object-fit:cover;" />{% endif %}
+                {% if brand.display_logo %}<img src="{{ brand.display_logo }}?v=3" alt="{{ brand.name }}" style="width:100%; height:100%; object-fit:cover;" />
+                {% elif brand.logo_static %}<img src="{% static brand.logo_static %}?v=3" alt="{{ brand.name }}" style="width:100%; height:100%; object-fit:cover;" />{% endif %}
               </span>
             </td>
             <td>{{ brand.name }}</td>

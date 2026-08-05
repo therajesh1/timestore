@@ -23,25 +23,34 @@
   </div>
 
   {% if category == 'Wrist Watch' %}
-    <div class="wrist-watch-brands-section" style="margin-bottom: 3.5rem;">
-      <p class="mono" style="font-size:10px; letter-spacing:0.3em; text-transform:uppercase; color: var(--accent); margin-bottom:1.5rem;">Filter by Brand</p>
-      <div class="brands-grid">
-        {% for brand in nav_brands %}
-          <a href="{% url 'product_list' %}?category=Wrist+Watch&brand={{ brand.slug }}" class="brand-logo-card {% if selected_brand == brand %}active{% endif %}">
-            <div class="brand-logo-img-wrapper">
-              {% if brand.display_logo %}
-                <img src="{{ brand.display_logo }}" alt="{{ brand.name }}" />
-              {% elif brand.logo_static %}
-                <img src="{% static brand.logo_static %}" alt="{{ brand.name }}" />
-              {% else %}
-                <span class="mono" style="font-size: 0.9rem; font-weight: 600; color: var(--primary);">{{ brand.name }}</span>
-              {% endif %}
-            </div>
-            <span class="brand-logo-name">{{ brand.name }}</span>
-          </a>
-        {% endfor %}
+    {% if not selected_brand %}
+      <div class="wrist-watch-brands-section" style="margin-bottom: 3.5rem;">
+        <p class="mono" style="font-size:10px; letter-spacing:0.3em; text-transform:uppercase; color: var(--accent); margin-bottom:1.5rem; text-align: center;">Select Brand</p>
+        <div class="brands-grid">
+          {% for brand in nav_brands %}
+            <a href="{% url 'product_list' %}?category=Wrist+Watch&brand={{ brand.slug }}" class="brand-logo-card">
+              <div class="brand-logo-img-wrapper">
+                {% if brand.display_logo %}
+                  <img src="{{ brand.display_logo }}?v=3" alt="{{ brand.name }}" />
+                {% elif brand.logo_static %}
+                  <img src="{% static brand.logo_static %}?v=3" alt="{{ brand.name }}" />
+                {% else %}
+                  <span class="mono" style="font-size: 0.9rem; font-weight: 600; color: var(--primary);">{{ brand.name }}</span>
+                {% endif %}
+              </div>
+              <span class="brand-logo-name">{{ brand.name }}</span>
+            </a>
+          {% endfor %}
+        </div>
       </div>
-    </div>
+    {% else %}
+      <div style="margin-bottom: 2rem;">
+        <a href="{% url 'product_list' %}?category=Wrist+Watch" class="btn-link" style="display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle;"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+          Back to Brands
+        </a>
+      </div>
+    {% endif %}
   {% endif %}
 
   {% if not category %}
@@ -53,14 +62,18 @@
     </div>
   {% endif %}
 
-  {% if products %}
-    <div class="product-grid">
-      {% for product in products %}{% include "store/_product_card.html" %}{% endfor %}
-    </div>
+  {% if category == 'Wrist Watch' and not selected_brand %}
+    <!-- Do not show products until a brand is selected -->
   {% else %}
-    <div class="empty-state">
-      <p>No timepieces matched your search.</p>
-    </div>
+    {% if products %}
+      <div class="product-grid">
+        {% for product in products %}{% include "store/_product_card.html" %}{% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <p>No timepieces matched your search.</p>
+      </div>
+    {% endif %}
   {% endif %}
 </section>
 {% endblock %}
