@@ -199,6 +199,12 @@ def product_create(request):
         if form.is_valid():
             product = form.save(commit=False)
             product.ref = _next_product_ref()
+            if selected_category in SIMPLE_CATEGORIES:
+                default_brand, _ = Brand.objects.get_or_create(
+                    name="Generic",
+                    defaults={"show_in_nav": False}
+                )
+                product.brand = default_brand
             product.save()
             messages.success(request, f"{product.name} added to the catalog.")
             return redirect("product_manage_list")
