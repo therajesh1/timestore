@@ -77,12 +77,11 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 
 # Database connection settings (PostgreSQL fallback for Railway / SQLite for local development)
-import os
-import dj_database_url
-
 # If you want to connect Render to Railway entirely via code, paste your DATABASE_PUBLIC_URL from Railway here.
 # WARNING: Hardcoding database credentials in code is a security risk if your GitHub repository is public.
-HARDCODED_PUBLIC_URL = ""
+import dj_database_url
+
+HARDCODED_PUBLIC_URL = "postgresql://postgres:ZSuzAwwAISrbFwiXmLqeiLiVjSVxHXPI@altaria.proxy.rlwy.net:13666/railway"
 
 DATABASE_URL = os.environ.get("DATABASE_URL") or HARDCODED_PUBLIC_URL
 PGHOST = os.environ.get("PGHOST")
