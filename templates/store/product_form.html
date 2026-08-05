@@ -52,7 +52,7 @@
           </div>
           <div class="form-field">{{ form.image_url.label_tag }}{{ form.image_url }}</div>
         </div>
-        <div class="form-row" style="margin-top: 1rem; grid-template-columns: repeat(3, 1fr);">
+        <div class="form-row-triple" style="margin-top: 1rem;">
           <div class="form-field">
             <label>Image 2</label>
             {{ form.image2 }}
@@ -117,7 +117,7 @@
           </div>
           <div class="form-field">{{ form.image_url.label_tag }}{{ form.image_url }}</div>
         </div>
-        <div class="form-row" style="margin-top: 1rem; grid-template-columns: repeat(3, 1fr);">
+        <div class="form-row-triple" style="margin-top: 1rem;">
           <div class="form-field">
             <label>Image 2</label>
             {{ form.image2 }}
@@ -377,61 +377,118 @@
           { label: "Case Size", id: "id_case_size" },
           { label: "Gender", id: "id_gender" }
         ];
-        
+
         const specsBody = document.getElementById("prev-detail-specs");
         specsBody.innerHTML = "";
+
+        // Dynamically add Model, Collection, Color if present
+        const modelVal = document.getElementById("id_model_number")?.value;
+        if (modelVal && modelVal.trim() !== "") {
+          addSpecRow("Model Number", modelVal);
+        }
+        const ttsVal = document.getElementById("id_tts_model")?.value;
+        if (ttsVal && ttsVal.trim() !== "") {
+          addSpecRow("TTS Model", ttsVal);
+        }
+        const colVal = document.getElementById("id_collection")?.value;
+        if (colVal && colVal.trim() !== "") {
+          addSpecRow("Collection", colVal);
+        }
+        const colrVal = document.getElementById("id_colour")?.value;
+        if (colrVal && colrVal.trim() !== "") {
+          addSpecRow("Color", colrVal);
+        }
+
         specFields.forEach(f => {
-          const val = document.getElementById(f.id)?.value;
-          if (val) {
-            const row = document.createElement("tr");
-            row.style.borderBottom = "1px solid rgba(255,255,255,0.05)";
-            
-            const td1 = document.createElement("td");
-            td1.style.color = "var(--muted-foreground)";
-            td1.style.padding = "0.5rem 0";
-            td1.textContent = f.label;
-            
-            const td2 = document.createElement("td");
-            td2.style.textAlign = "right";
-            td2.style.fontWeight = "500";
-            td2.textContent = val;
-            
-            row.appendChild(td1);
-            row.appendChild(td2);
-            specsBody.appendChild(row);
+          const el = document.getElementById(f.id);
+          if (el) {
+            let val = "";
+            if (el.tagName === "SELECT") {
+              if (el.selectedIndex >= 0) {
+                val = el.options[el.selectedIndex].text;
+                if (val.includes("---")) val = "";
+              }
+            } else {
+              val = el.value;
+            }
+
+            if (val && val.trim() !== "") {
+              addSpecRow(f.label, val.trim());
+            }
           }
         });
+
+        function addSpecRow(label, value) {
+          const row = document.createElement("tr");
+          row.style.borderBottom = "1px solid var(--border)";
+
+          const td1 = document.createElement("td");
+          td1.style.color = "var(--muted-foreground)";
+          td1.style.padding = "0.6rem 0";
+          td1.style.fontSize = "0.85rem";
+          td1.textContent = label;
+
+          const td2 = document.createElement("td");
+          td2.style.textAlign = "right";
+          td2.style.fontWeight = "500";
+          td2.style.fontSize = "0.85rem";
+          td2.style.color = "var(--foreground)";
+          td2.textContent = value;
+
+          row.appendChild(td1);
+          row.appendChild(td2);
+          specsBody.appendChild(row);
+        }
 
         // Images preview
         const imagesList = [];
-        const imageFiles = [
-          document.getElementById("id_image"),
-          document.getElementById("id_image2"),
-          document.getElementById("id_image3"),
-          document.getElementById("id_image4")
-        ];
-
         const fallbackUrl = document.getElementById("id_image_url")?.value;
 
-        imageFiles.forEach(input => {
-          if (input && input.files && input.files[0]) {
-            imagesList.push(URL.createObjectURL(input.files[0]));
-          }
-        });
+        // Slot 1 (Primary Image)
+        const imgInput = document.getElementById("id_image");
+        if (imgInput && imgInput.files && imgInput.files[0]) {
+          imagesList.push(URL.createObjectURL(imgInput.files[0]));
+        } else if (fallbackUrl) {
+          imagesList.push(fallbackUrl);
+        } else {
+          {% if product and product.display_image %}
+            imagesList.push("{{ product.display_image }}");
+          {% endif %}
+        }
 
+        // Slot 2
+        const imgInput2 = document.getElementById("id_image2");
+        if (imgInput2 && imgInput2.files && imgInput2.files[0]) {
+          imagesList.push(URL.createObjectURL(imgInput2.files[0]));
+        } else {
+          {% if product and product.image2 %}
+            imagesList.push("{{ product.image2.url }}");
+          {% endif %}
+        }
+
+        // Slot 3
+        const imgInput3 = document.getElementById("id_image3");
+        if (imgInput3 && imgInput3.files && imgInput3.files[0]) {
+          imagesList.push(URL.createObjectURL(imgInput3.files[0]));
+        } else {
+          {% if product and product.image3 %}
+            imagesList.push("{{ product.image3.url }}");
+          {% endif %}
+        }
+
+        // Slot 4
+        const imgInput4 = document.getElementById("id_image4");
+        if (imgInput4 && imgInput4.files && imgInput4.files[0]) {
+          imagesList.push(URL.createObjectURL(imgInput4.files[0]));
+        } else {
+          {% if product and product.image4 %}
+            imagesList.push("{{ product.image4.url }}");
+          {% endif %}
+        }
+
+        // Default fallback if completely empty
         if (imagesList.length === 0) {
-          if (fallbackUrl) {
-            imagesList.push(fallbackUrl);
-          } else {
-            {% if product and product.display_image %}
-              imagesList.push("{{ product.display_image }}");
-              {% if product.image2 %}imagesList.push("{{ product.image2.url }}");{% endif %}
-              {% if product.image3 %}imagesList.push("{{ product.image3.url }}");{% endif %}
-              {% if product.image4 %}imagesList.push("{{ product.image4.url }}");{% endif %}
-            {% else %}
-              imagesList.push("https://images.unsplash.com/photo-1522312346375-d1a52e2b99b3?w=500&fit=crop");
-            {% endif %}
-          }
+          imagesList.push("https://images.unsplash.com/photo-1522312346375-d1a52e2b99b3?w=500&fit=crop");
         }
 
         const cardImg = document.getElementById("prev-card-img");
@@ -455,7 +512,7 @@
               buttons.forEach(b => b.classList.remove('active'));
               btn.classList.add('active');
             };
-            
+
             const img = document.createElement("img");
             img.src = url;
             btn.appendChild(img);

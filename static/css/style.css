@@ -252,6 +252,17 @@ footer { border-top: 1px solid var(--border); margin-top: 4rem; }
   }
 }
 
+.form-row-triple {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+@media (min-width: 600px) {
+  .form-row-triple {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 .cart-summary-row {
   display: flex;
   justify-content: flex-end;
