@@ -192,31 +192,56 @@
   <!-- Live Preview Modal -->
   <div id="preview-modal" class="preview-modal" style="display: none;">
     <div class="preview-modal-backdrop" onclick="closePreview()"></div>
-    <div class="preview-modal-content">
-      <div class="preview-modal-header">
-        <h3>Live Product Preview</h3>
+    <div class="browser-mockup-window">
+      <!-- macOS Window Header Controls -->
+      <div class="browser-mockup-header">
+        <div class="browser-window-dots">
+          <span class="dot dot-close" onclick="closePreview()"></span>
+          <span class="dot dot-minimize"></span>
+          <span class="dot dot-maximize"></span>
+        </div>
+        
         <div class="preview-toggle-tabs">
           <button type="button" class="preview-tab-btn active" onclick="switchPreviewTab('card')">Product Card</button>
-          <button type="button" class="preview-tab-btn" onclick="switchPreviewTab('detail')">Detail Page</button>
+          <button type="button" class="preview-tab-btn" onclick="switchPreviewTab('detail')">Detail Page Preview</button>
         </div>
-        <button type="button" class="preview-close-btn" onclick="closePreview()">&times;</button>
+        
+        <button type="button" class="browser-close-x" onclick="closePreview()" aria-label="Close Preview">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      
+      <!-- Browser URL Navigation Bar -->
+      <div class="browser-url-bar-container">
+        <div class="browser-navigation-arrows">
+          <span class="arrow-left">&larr;</span>
+          <span class="arrow-right">&rarr;</span>
+          <span class="arrow-refresh">&#8635;</span>
+        </div>
+        <div class="browser-url-input">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px; color: var(--muted-foreground); display: inline-block; vertical-align: middle;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          <span class="url-text">https://thetimestore.in/products/preview</span>
+        </div>
       </div>
       
       <div class="preview-modal-body">
         <!-- Card Preview Container -->
         <div id="preview-tab-card" class="preview-tab-pane">
-          <div class="product-grid" style="max-width: 320px; margin: 2rem auto;">
-            <article class="product-card">
-              <div class="thumb">
-                <span class="ref">PREVIEW</span>
-                <img id="prev-card-img" src="" alt="Product Image" style="width:100%; height:100%; object-fit:cover;" />
-              </div>
-              <div class="info">
-                <span class="tagline" id="prev-card-brand">BRAND</span>
-                <h3 class="name" id="prev-card-name">Product Name</h3>
-                <span class="price" id="prev-card-price">₹0</span>
-              </div>
-            </article>
+          <div class="preview-card-canvas">
+            <div class="product-grid" style="max-width: 290px; margin: 0 auto; box-shadow: 0 10px 25px rgba(0,0,0,0.08);">
+              <article class="product-card">
+                <div class="thumb" style="aspect-ratio: 4/5;">
+                  <span class="ref" style="background: var(--accent); color: white;">PREVIEW</span>
+                  <img id="prev-card-img" src="" alt="Product Image" style="width:100%; height:100%; object-fit:cover;" />
+                </div>
+                <div class="info">
+                  <span class="tagline" id="prev-card-brand">BRAND</span>
+                  <h3 class="name" id="prev-card-name" style="font-size: 1.15rem; font-family: 'DM Serif Display', serif;">Product Name</h3>
+                  <span class="price" id="prev-card-price" style="color: var(--accent); font-weight: 600;">₹0</span>
+                </div>
+              </article>
+            </div>
+            <p style="text-align: center; color: var(--muted-foreground); font-size: 0.8rem; margin-top: 1.5rem;" class="mono">SIMULATED CARD VIEW</p>
           </div>
         </div>
         
@@ -225,19 +250,24 @@
           <div class="section" style="padding: 2rem 0; background: var(--background); text-align: left;">
             <div style="display:grid; grid-template-columns: 1fr; gap: 3rem;" class="product-detail-grid">
               <div class="product-gallery">
-                <div class="main-image-viewport">
-                  <img id="prev-detail-main-img" src="" alt="Main Product Image" />
+                <div class="main-image-viewport" style="aspect-ratio: 4/5; border: 1px solid var(--border); overflow: hidden; background: #EDE9E1;">
+                  <img id="prev-detail-main-img" src="" alt="Main Product Image" style="width:100%; height:100%; object-fit:cover;" />
                 </div>
-                <div class="gallery-thumbnails" id="prev-detail-thumbnails">
+                <div class="gallery-thumbnails" id="prev-detail-thumbnails" style="display: flex; gap: 0.5rem; margin-top: 0.75rem;">
                   <!-- Thumbnail previews go here -->
                 </div>
               </div>
               <div>
                 <p class="mono" style="font-size:9px; letter-spacing:0.3em; text-transform:uppercase; color:var(--muted-foreground);" id="prev-detail-ref-brand">BRAND · REF</p>
-                <h1 style="font-size: 2.75rem; margin: 0.75rem 0 1.25rem;" id="prev-detail-name">Product Name</h1>
-                <p class="mono" style="font-size:1.5rem; color: var(--accent); margin-bottom: 1.5rem;" id="prev-detail-price">₹0</p>
+                <h1 style="font-size: 2.5rem; margin: 0.5rem 0 1rem; font-family: 'DM Serif Display', serif; font-weight: 400;" id="prev-detail-name">Product Name</h1>
+                <p class="mono" style="font-size:1.5rem; color: var(--accent); margin-bottom: 1.5rem; font-weight: 600;" id="prev-detail-price">₹0</p>
                 
-                <p style="color: var(--muted-foreground); line-height: 1.8; margin-bottom: 2rem;" id="prev-detail-desc">No description.</p>
+                <p style="color: var(--muted-foreground); line-height: 1.7; margin-bottom: 2rem; font-size: 0.95rem;" id="prev-detail-desc">No description.</p>
+                
+                <button type="button" class="btn btn-accent" style="opacity:0.75; cursor:not-allowed; padding: 0.8rem 1.75rem; font-size: 0.8rem;" disabled>
+                  Add to Cart (Preview)
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="vertical-align: middle; margin-left: 0.25rem;"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+                </button>
                 
                 <div style="margin-top: 2.5rem; border-top: 1px solid var(--border); padding-top: 1.5rem;">
                   <p class="mono" style="font-size:0.75rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent); margin-bottom:1rem;">Specifications</p>

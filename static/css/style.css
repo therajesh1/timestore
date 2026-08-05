@@ -376,12 +376,12 @@ footer { border-top: 1px solid var(--border); margin-top: 4rem; }
   align-items: center;
   gap: 0.75rem;
   text-decoration: none;
-  width: 90px;
+  width: 110px;
   flex-shrink: 0;
 }
 .category-card-badge {
-  width: 72px;
-  height: 72px;
+  width: 90px;
+  height: 90px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -392,8 +392,8 @@ footer { border-top: 1px solid var(--border); margin-top: 4rem; }
   overflow: hidden;
 }
 .category-card-badge-img {
-  width: 60%;
-  height: 60%;
+  width: 68%;
+  height: 68%;
   object-fit: contain;
   transition: transform 0.3s ease;
 }
@@ -488,37 +488,47 @@ footer { border-top: 1px solid var(--border); margin-top: 4rem; }
   background: rgba(15, 13, 30, 0.75);
   backdrop-filter: blur(4px);
 }
-.preview-modal-content {
+/* BROWSER SIMULATOR MOCKUP */
+.browser-mockup-window {
   position: relative;
   z-index: 10;
   background: var(--background);
   width: 90%;
-  max-width: 960px;
-  max-height: 90vh;
+  max-width: 980px;
+  height: 85vh;
   display: flex;
   flex-direction: column;
   border: 1px solid var(--border);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.4);
   animation: modalEnter 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
-@keyframes modalEnter {
-  from { opacity: 0; transform: scale(0.96) translateY(10px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
-}
-.preview-modal-header {
+.browser-mockup-header {
+  background: var(--secondary);
+  border-bottom: 1px solid var(--border);
+  padding: 0.75rem 1.5rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.25rem 2rem;
-  border-bottom: 1px solid var(--border);
 }
-.preview-modal-header h3 {
-  font-size: 1.25rem;
-  margin: 0;
+.browser-window-dots {
+  display: flex;
+  gap: 6px;
 }
+.browser-window-dots .dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.dot-close { background: #FF5F56; cursor: pointer; }
+.dot-minimize { background: #FFBD2E; }
+.dot-maximize { background: #27C93F; }
+
 .preview-toggle-tabs {
   display: flex;
-  background: var(--secondary);
+  background: rgba(0, 0, 0, 0.05);
   border: 1px solid var(--border);
   padding: 2px;
   border-radius: 4px;
@@ -527,36 +537,165 @@ footer { border-top: 1px solid var(--border); margin-top: 4rem; }
   background: transparent;
   border: none;
   color: var(--muted-foreground);
-  padding: 0.5rem 1rem;
-  font-size: 0.75rem;
-  letter-spacing: 0.1em;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   font-weight: 600;
   cursor: pointer;
-  border-radius: 2px;
+  border-radius: 3px;
   transition: all 0.2s ease;
 }
 .preview-tab-btn.active {
   background: var(--background);
-  color: var(--primary);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  color: var(--foreground);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
-.preview-close-btn {
+.browser-close-x {
   background: none;
   border: none;
-  font-size: 1.75rem;
-  line-height: 1;
   cursor: pointer;
   color: var(--muted-foreground);
-  padding: 0;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
 }
-.preview-close-btn:hover {
+.browser-close-x:hover {
   color: var(--foreground);
 }
+
+.browser-url-bar-container {
+  background: var(--secondary);
+  border-bottom: 1px solid var(--border);
+  padding: 0.4rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+.browser-navigation-arrows {
+  display: flex;
+  gap: 0.75rem;
+  color: var(--muted-foreground);
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+.browser-navigation-arrows span {
+  cursor: pointer;
+}
+.browser-url-input {
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  flex: 1;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.75rem;
+  color: var(--foreground);
+  display: flex;
+  align-items: center;
+  max-width: 600px;
+  margin: 0 auto;
+}
+.url-text {
+  font-family: 'JetBrains Mono', monospace;
+  opacity: 0.8;
+}
+
 .preview-modal-body {
   flex: 1;
   overflow-y: auto;
   padding: 2rem;
   background: var(--background);
+}
+.preview-card-canvas {
+  background: radial-gradient(circle, var(--secondary) 0%, var(--border) 100%);
+  padding: 3rem;
+  border-radius: 8px;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border: 1px dashed var(--border);
+}
+
+/* BRANDS GRID FILTER */
+.brands-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+@media (min-width: 600px) {
+  .brands-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+@media (min-width: 900px) {
+  .brands-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+.brand-logo-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 1.25rem 1rem;
+  text-align: center;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+}
+.brand-logo-img-wrapper {
+  height: 48px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.75rem;
+}
+.brand-logo-img-wrapper img {
+  max-height: 100%;
+  max-width: 85%;
+  object-fit: contain;
+  filter: grayscale(1);
+  opacity: 0.7;
+  transition: all 0.3s ease;
+}
+.brand-logo-name {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+.brand-logo-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
+}
+.brand-logo-card:hover .brand-logo-img-wrapper img {
+  filter: grayscale(0);
+  opacity: 1;
+  transform: scale(1.05);
+}
+.brand-logo-card:hover .brand-logo-name {
+  color: var(--foreground);
+}
+.brand-logo-card.active {
+  border-color: var(--accent);
+  background: var(--secondary);
+}
+.brand-logo-card.active .brand-logo-img-wrapper img {
+  filter: grayscale(0);
+  opacity: 1;
+}
+.brand-logo-card.active .brand-logo-name {
+  color: var(--foreground);
+  font-weight: 600;
 }
 

@@ -21,6 +21,28 @@
     {% endif %}
   </div>
 
+  {% if category == 'Wrist Watch' %}
+    <div class="wrist-watch-brands-section" style="margin-bottom: 3.5rem;">
+      <p class="mono" style="font-size:10px; letter-spacing:0.3em; text-transform:uppercase; color: var(--accent); margin-bottom:1.5rem;">Filter by Brand</p>
+      <div class="brands-grid">
+        {% for brand in nav_brands %}
+          <a href="{% url 'product_list' %}?category=Wrist+Watch&brand={{ brand.slug }}" class="brand-logo-card {% if selected_brand == brand %}active{% endif %}">
+            <div class="brand-logo-img-wrapper">
+              {% if brand.display_logo %}
+                <img src="{{ brand.display_logo }}" alt="{{ brand.name }}" />
+              {% elif brand.logo_static %}
+                <img src="{% static brand.logo_static %}" alt="{{ brand.name }}" />
+              {% else %}
+                <span class="mono" style="font-size: 0.9rem; font-weight: 600; color: var(--primary);">{{ brand.name }}</span>
+              {% endif %}
+            </div>
+            <span class="brand-logo-name">{{ brand.name }}</span>
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
   {% if not category %}
     <div class="filter-bar">
       <a href="{% url 'product_list' %}" class="{% if not category and not selected_brand %}active{% endif %}">All Items</a>
