@@ -76,9 +76,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
+# Database connection settings (PostgreSQL fallback for Railway / SQLite for local development)
 import os
 import dj_database_url
 
