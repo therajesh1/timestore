@@ -36,6 +36,21 @@
   </div>
 </section>
 
+<section class="home-categories-section">
+  <div class="category-swipe-wrapper">
+    <div class="category-swipe-row">
+      {% for cat in nav_categories %}
+        <a href="{% url 'product_list' %}?category={{ cat.name|urlencode }}" class="category-card-chip">
+          <div class="category-card-badge">
+            <img src="{% static 'images/icons/' %}{{ cat.icon }}.png" alt="{{ cat.name }}" class="category-card-badge-img" />
+          </div>
+          <span class="category-card-name">{{ cat.name }}</span>
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
 <section class="gender-tiles">
   <a href="{% url 'product_list' %}?category=Wrist+Watch" class="gender-tile">
     <img src="https://images.unsplash.com/photo-1602752975366-5520991f958d?w=900&h=1100&fit=crop&auto=format" alt="Man wearing a chronograph watch" />

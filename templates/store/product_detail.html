@@ -3,8 +3,19 @@
 {% block content %}
 <section class="section">
   <div style="display:grid; grid-template-columns: 1fr; gap: 3rem;" class="product-detail-grid">
-    <div class="thumb" style="aspect-ratio: 4/5; background:#EDE9E1; overflow:hidden;">
-      <img src="{{ product.display_image }}" alt="{{ product.name }}" style="width:100%; height:100%; object-fit:cover;" />
+    <div class="product-gallery">
+      <div class="main-image-viewport">
+        <img id="main-product-img" src="{{ product.display_image }}" alt="{{ product.name }}" />
+      </div>
+      {% if product.all_images|length > 1 %}
+        <div class="gallery-thumbnails">
+          {% for img_url in product.all_images %}
+            <button class="thumb-btn {% if forloop.first %}active{% endif %}" onclick="setMainImage('{{ img_url }}', this)" type="button">
+              <img src="{{ img_url }}" alt="" />
+            </button>
+          {% endfor %}
+        </div>
+      {% endif %}
     </div>
     <div>
       <p class="mono" style="font-size:9px; letter-spacing:0.3em; text-transform:uppercase; color:var(--muted-foreground);">{{ product.brand.name|default:"Atelier" }} · {{ product.ref }}</p>
@@ -113,4 +124,20 @@
     .product-detail-grid { grid-template-columns: 1fr 1fr !important; }
   }
 </style>
+
+<script>
+  function setMainImage(url, btn) {
+    const mainImg = document.getElementById('main-product-img');
+    if (mainImg) {
+      mainImg.style.opacity = '0.3';
+      setTimeout(() => {
+        mainImg.src = url;
+        mainImg.style.opacity = '1';
+      }, 100);
+    }
+    const buttons = document.querySelectorAll('.thumb-btn');
+    buttons.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+</script>
 {% endblock %}

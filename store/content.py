@@ -38,7 +38,7 @@ NAV_CATEGORIES = [
     {"name": "Perfumes", "slug": "perfumes", "icon": "perfume", "shows_brands": False},
     {"name": "Accessories", "slug": "accessories", "icon": "accessories", "shows_brands": False},
     {"name": "Smart Watchs", "slug": "smart-watchs", "icon": "smartwatch", "shows_brands": False},
-    {"name": "Kids", "slug": "kids", "icon": "kids", "shows_brands": False},
+    {"name": "Kids Watch", "slug": "kids-watch", "icon": "kids", "shows_brands": False},
 ]
 
 BRANDS = [

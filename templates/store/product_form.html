@@ -43,13 +43,31 @@
       </div>
 
       <div class="card-panel" style="margin-bottom: 1.5rem;">
-        <p class="mono" style="font-size:0.75rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent); margin-bottom:1.25rem;">Images</p>
+        <p class="mono" style="font-size:0.75rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent); margin-bottom:1.25rem;">Images (Max 4)</p>
         <div class="form-row">
           <div class="form-field">
-            {{ form.image.label_tag }}{{ form.image }}
+            <label>Primary Image</label>
+            {{ form.image }}
             {% if product and product.image %}<p class="mono" style="font-size:0.75rem; color:var(--muted-foreground); margin-top:0.35rem;">Current: {{ product.image.name }}</p>{% endif %}
           </div>
           <div class="form-field">{{ form.image_url.label_tag }}{{ form.image_url }}</div>
+        </div>
+        <div class="form-row" style="margin-top: 1rem; grid-template-columns: repeat(3, 1fr);">
+          <div class="form-field">
+            <label>Image 2</label>
+            {{ form.image2 }}
+            {% if product and product.image2 %}<p class="mono" style="font-size:0.75rem; color:var(--muted-foreground); margin-top:0.35rem;">Current: {{ product.image2.name }}</p>{% endif %}
+          </div>
+          <div class="form-field">
+            <label>Image 3</label>
+            {{ form.image3 }}
+            {% if product and product.image3 %}<p class="mono" style="font-size:0.75rem; color:var(--muted-foreground); margin-top:0.35rem;">Current: {{ product.image3.name }}</p>{% endif %}
+          </div>
+          <div class="form-field">
+            <label>Image 4</label>
+            {{ form.image4 }}
+            {% if product and product.image4 %}<p class="mono" style="font-size:0.75rem; color:var(--muted-foreground); margin-top:0.35rem;">Current: {{ product.image4.name }}</p>{% endif %}
+          </div>
         </div>
       </div>
 
@@ -93,10 +111,28 @@
         <div class="form-field">{{ form.description.label_tag }}{{ form.description }}</div>
         <div class="form-row">
           <div class="form-field">
-            {{ form.image.label_tag }}{{ form.image }}
+            <label>Primary Image</label>
+            {{ form.image }}
             {% if product and product.image %}<p class="mono" style="font-size:0.75rem; color:var(--muted-foreground); margin-top:0.35rem;">Current: {{ product.image.name }}</p>{% endif %}
           </div>
           <div class="form-field">{{ form.image_url.label_tag }}{{ form.image_url }}</div>
+        </div>
+        <div class="form-row" style="margin-top: 1rem; grid-template-columns: repeat(3, 1fr);">
+          <div class="form-field">
+            <label>Image 2</label>
+            {{ form.image2 }}
+            {% if product and product.image2 %}<p class="mono" style="font-size:0.75rem; color:var(--muted-foreground); margin-top:0.35rem;">Current: {{ product.image2.name }}</p>{% endif %}
+          </div>
+          <div class="form-field">
+            <label>Image 3</label>
+            {{ form.image3 }}
+            {% if product and product.image3 %}<p class="mono" style="font-size:0.75rem; color:var(--muted-foreground); margin-top:0.35rem;">Current: {{ product.image3.name }}</p>{% endif %}
+          </div>
+          <div class="form-field">
+            <label>Image 4</label>
+            {{ form.image4 }}
+            {% if product and product.image4 %}<p class="mono" style="font-size:0.75rem; color:var(--muted-foreground); margin-top:0.35rem;">Current: {{ product.image4.name }}</p>{% endif %}
+          </div>
         </div>
       </div>
 
@@ -146,11 +182,78 @@
       </div>
     {% endif %}
 
-    <div style="display:flex; gap:1rem;">
+    <div style="display:flex; gap:1rem; align-items:center; flex-wrap:wrap; margin-top: 2rem;">
       <button type="submit" class="btn btn-accent">{% if is_new %}Add Product{% else %}Save Changes{% endif %}</button>
-      <a href="{% url 'product_manage_list' %}" class="btn btn-outline">Cancel</a>
+      <button type="button" class="btn btn-outline" id="btn-preview">Preview Product</button>
+      <a href="{% url 'product_manage_list' %}" class="btn btn-outline" style="margin-left:auto;">Cancel</a>
     </div>
   </form>
+
+  <!-- Live Preview Modal -->
+  <div id="preview-modal" class="preview-modal" style="display: none;">
+    <div class="preview-modal-backdrop" onclick="closePreview()"></div>
+    <div class="preview-modal-content">
+      <div class="preview-modal-header">
+        <h3>Live Product Preview</h3>
+        <div class="preview-toggle-tabs">
+          <button type="button" class="preview-tab-btn active" onclick="switchPreviewTab('card')">Product Card</button>
+          <button type="button" class="preview-tab-btn" onclick="switchPreviewTab('detail')">Detail Page</button>
+        </div>
+        <button type="button" class="preview-close-btn" onclick="closePreview()">&times;</button>
+      </div>
+      
+      <div class="preview-modal-body">
+        <!-- Card Preview Container -->
+        <div id="preview-tab-card" class="preview-tab-pane">
+          <div class="product-grid" style="max-width: 320px; margin: 2rem auto;">
+            <article class="product-card">
+              <div class="thumb">
+                <span class="ref">PREVIEW</span>
+                <img id="prev-card-img" src="" alt="Product Image" style="width:100%; height:100%; object-fit:cover;" />
+              </div>
+              <div class="info">
+                <span class="tagline" id="prev-card-brand">BRAND</span>
+                <h3 class="name" id="prev-card-name">Product Name</h3>
+                <span class="price" id="prev-card-price">₹0</span>
+              </div>
+            </article>
+          </div>
+        </div>
+        
+        <!-- Detail Preview Container -->
+        <div id="preview-tab-detail" class="preview-tab-pane" style="display: none;">
+          <div class="section" style="padding: 2rem 0; background: var(--background); text-align: left;">
+            <div style="display:grid; grid-template-columns: 1fr; gap: 3rem;" class="product-detail-grid">
+              <div class="product-gallery">
+                <div class="main-image-viewport">
+                  <img id="prev-detail-main-img" src="" alt="Main Product Image" />
+                </div>
+                <div class="gallery-thumbnails" id="prev-detail-thumbnails">
+                  <!-- Thumbnail previews go here -->
+                </div>
+              </div>
+              <div>
+                <p class="mono" style="font-size:9px; letter-spacing:0.3em; text-transform:uppercase; color:var(--muted-foreground);" id="prev-detail-ref-brand">BRAND · REF</p>
+                <h1 style="font-size: 2.75rem; margin: 0.75rem 0 1.25rem;" id="prev-detail-name">Product Name</h1>
+                <p class="mono" style="font-size:1.5rem; color: var(--accent); margin-bottom: 1.5rem;" id="prev-detail-price">₹0</p>
+                
+                <p style="color: var(--muted-foreground); line-height: 1.8; margin-bottom: 2rem;" id="prev-detail-desc">No description.</p>
+                
+                <div style="margin-top: 2.5rem; border-top: 1px solid var(--border); padding-top: 1.5rem;">
+                  <p class="mono" style="font-size:0.75rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent); margin-bottom:1rem;">Specifications</p>
+                  <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem; line-height: 2;">
+                    <tbody id="prev-detail-specs">
+                      <!-- Specifications rows will be injected dynamically -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script>
     document.addEventListener("DOMContentLoaded", function () {
@@ -201,6 +304,175 @@
           el.addEventListener("change", updateProductName);
         });
       }
+
+      // Live Preview Logic
+      const btnPreview = document.getElementById("btn-preview");
+      const previewModal = document.getElementById("preview-modal");
+
+      function openPreview() {
+        const name = document.getElementById("id_name")?.value || "";
+        const price = document.getElementById("id_price")?.value || "0";
+        const desc = document.getElementById("id_description")?.value || "";
+        
+        let brandName = "Atelier";
+        if (brand && brand.selectedIndex >= 0) {
+          const text = brand.options[brand.selectedIndex].text;
+          if (!text.includes("---")) {
+            brandName = text;
+          }
+        }
+
+        const formattedPrice = "₹" + parseFloat(price || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 });
+
+        // Update Card Preview
+        document.getElementById("prev-card-brand").textContent = brandName;
+        document.getElementById("prev-card-name").textContent = name;
+        document.getElementById("prev-card-price").textContent = formattedPrice;
+
+        // Update Detail Preview
+        document.getElementById("prev-detail-ref-brand").textContent = brandName + " · PREVIEW";
+        document.getElementById("prev-detail-name").textContent = name;
+        document.getElementById("prev-detail-price").textContent = formattedPrice;
+        document.getElementById("prev-detail-desc").textContent = desc || "No description provided.";
+
+        // Build specs
+        const specFields = [
+          { label: "Warranty Period", id: "id_warranty_period" },
+          { label: "Glass Material", id: "id_glass_material" },
+          { label: "Strap Material", id: "id_strap_material" },
+          { label: "Movement", id: "id_movement" },
+          { label: "Strap Color", id: "id_strap_color" },
+          { label: "Dial Color", id: "id_dial_color" },
+          { label: "Case Material", id: "id_case_material" },
+          { label: "Case Size", id: "id_case_size" },
+          { label: "Gender", id: "id_gender" }
+        ];
+        
+        const specsBody = document.getElementById("prev-detail-specs");
+        specsBody.innerHTML = "";
+        specFields.forEach(f => {
+          const val = document.getElementById(f.id)?.value;
+          if (val) {
+            const row = document.createElement("tr");
+            row.style.borderBottom = "1px solid rgba(255,255,255,0.05)";
+            
+            const td1 = document.createElement("td");
+            td1.style.color = "var(--muted-foreground)";
+            td1.style.padding = "0.5rem 0";
+            td1.textContent = f.label;
+            
+            const td2 = document.createElement("td");
+            td2.style.textAlign = "right";
+            td2.style.fontWeight = "500";
+            td2.textContent = val;
+            
+            row.appendChild(td1);
+            row.appendChild(td2);
+            specsBody.appendChild(row);
+          }
+        });
+
+        // Images preview
+        const imagesList = [];
+        const imageFiles = [
+          document.getElementById("id_image"),
+          document.getElementById("id_image2"),
+          document.getElementById("id_image3"),
+          document.getElementById("id_image4")
+        ];
+
+        const fallbackUrl = document.getElementById("id_image_url")?.value;
+
+        imageFiles.forEach(input => {
+          if (input && input.files && input.files[0]) {
+            imagesList.push(URL.createObjectURL(input.files[0]));
+          }
+        });
+
+        if (imagesList.length === 0) {
+          if (fallbackUrl) {
+            imagesList.push(fallbackUrl);
+          } else {
+            {% if product and product.display_image %}
+              imagesList.push("{{ product.display_image }}");
+              {% if product.image2 %}imagesList.push("{{ product.image2.url }}");{% endif %}
+              {% if product.image3 %}imagesList.push("{{ product.image3.url }}");{% endif %}
+              {% if product.image4 %}imagesList.push("{{ product.image4.url }}");{% endif %}
+            {% else %}
+              imagesList.push("https://images.unsplash.com/photo-1522312346375-d1a52e2b99b3?w=500&fit=crop");
+            {% endif %}
+          }
+        }
+
+        const cardImg = document.getElementById("prev-card-img");
+        const detailMainImg = document.getElementById("prev-detail-main-img");
+        const prevThumbnails = document.getElementById("prev-detail-thumbnails");
+
+        if (imagesList[0]) {
+          cardImg.src = imagesList[0];
+          detailMainImg.src = imagesList[0];
+        }
+
+        prevThumbnails.innerHTML = "";
+        if (imagesList.length > 1) {
+          imagesList.forEach((url, index) => {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "thumb-btn" + (index === 0 ? " active" : "");
+            btn.onclick = function() {
+              detailMainImg.src = url;
+              const buttons = prevThumbnails.querySelectorAll('.thumb-btn');
+              buttons.forEach(b => b.classList.remove('active'));
+              btn.classList.add('active');
+            };
+            
+            const img = document.createElement("img");
+            img.src = url;
+            btn.appendChild(img);
+            prevThumbnails.appendChild(btn);
+          });
+        }
+
+        previewModal.style.display = "flex";
+        document.body.style.overflow = "hidden";
+      }
+
+      function closePreview() {
+        previewModal.style.display = "none";
+        document.body.style.overflow = "";
+      }
+
+      function switchPreviewTab(tab) {
+        const cardTab = document.getElementById("preview-tab-card");
+        const detailTab = document.getElementById("preview-tab-detail");
+        const buttons = document.querySelectorAll(".preview-tab-btn");
+
+        buttons.forEach(b => b.classList.remove("active"));
+        if (tab === "card") {
+          cardTab.style.display = "block";
+          detailTab.style.display = "none";
+          buttons[0].classList.add("active");
+        } else {
+          cardTab.style.display = "none";
+          detailTab.style.display = "block";
+          buttons[1].classList.add("active");
+        }
+      }
+
+      if (btnPreview) {
+        btnPreview.addEventListener("click", function() {
+          const name = document.getElementById("id_name")?.value.trim();
+          const price = document.getElementById("id_price")?.value.trim();
+          if (!name || !price) {
+            alert("Please fill out at least Product Name and Price to see preview.");
+            return;
+          }
+          openPreview();
+        });
+      }
+
+      window.closePreview = closePreview;
+      window.switchPreviewTab = switchPreviewTab;
     });
   </script>
 </section>

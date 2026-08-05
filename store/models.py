@@ -52,7 +52,7 @@ class Product(models.Model):
         PERFUMES = "Perfumes", "Perfumes"
         ACCESSORIES = "Accessories", "Accessories"
         SMART_WATCHS = "Smart Watchs", "Smart Watchs"
-        KIDS = "Kids", "Kids"
+        KIDS = "Kids Watch", "Kids Watch"
 
     class GST(models.TextChoices):
         ZERO = "0", "0%"
@@ -102,6 +102,9 @@ class Product(models.Model):
     remark = models.TextField(blank=True, default="")
     image = models.ImageField("Picture", upload_to="products/", blank=True, null=True)
     image_url = models.URLField("Picture URL (fallback)", max_length=500, blank=True)
+    image2 = models.ImageField("Picture 2", upload_to="products/", blank=True, null=True)
+    image3 = models.ImageField("Picture 3", upload_to="products/", blank=True, null=True)
+    image4 = models.ImageField("Picture 4", upload_to="products/", blank=True, null=True)
     stock = models.PositiveIntegerField(default=5)
     featured = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -126,6 +129,21 @@ class Product(models.Model):
         if self.image:
             return self.image.url
         return self.image_url
+
+    @property
+    def all_images(self):
+        imgs = []
+        if self.image:
+            imgs.append(self.image.url)
+        elif self.image_url:
+            imgs.append(self.image_url)
+        if self.image2:
+            imgs.append(self.image2.url)
+        if self.image3:
+            imgs.append(self.image3.url)
+        if self.image4:
+            imgs.append(self.image4.url)
+        return imgs
 
 
 class Order(models.Model):

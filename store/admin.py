@@ -49,7 +49,7 @@ class ProductAdmin(admin.ModelAdmin):
                 ("category", "product_type"),
                 ("colour", "collection"),
                 "description",
-                ("image", "image_url"),
+                ("image", "image_url", "image2", "image3", "image4"),
             ),
         }),
         ("Specifications", {
