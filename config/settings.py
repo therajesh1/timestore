@@ -80,7 +80,11 @@ WSGI_APPLICATION = 'config.wsgi.application'
 import os
 import dj_database_url
 
-DATABASE_URL = os.environ.get("DATABASE_URL")
+# If you want to connect Render to Railway entirely via code, paste your DATABASE_PUBLIC_URL from Railway here.
+# WARNING: Hardcoding database credentials in code is a security risk if your GitHub repository is public.
+HARDCODED_PUBLIC_URL = ""
+
+DATABASE_URL = os.environ.get("DATABASE_URL") or HARDCODED_PUBLIC_URL
 PGHOST = os.environ.get("PGHOST")
 
 if DATABASE_URL:
