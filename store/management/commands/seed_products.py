@@ -37,6 +37,16 @@ class Command(BaseCommand):
     help = "Seed the catalog with the Time Store's launch collection and a dev admin account."
 
     def handle(self, *args, **options):
+        if not User.objects.filter(username="admin").exists():
+            User.objects.create_superuser("admin", "admin@thetimestore.test", "TimeStore@2025")
+            self.stdout.write(self.style.SUCCESS("Created dev admin user → username: admin / password: TimeStore@2025"))
+        else:
+            self.stdout.write("Admin user already exists, skipped.")
+
+        if Product.objects.exists():
+            self.stdout.write("Catalog already seeded, skipping product creation.")
+            return
+
         house_brand, _ = Brand.objects.get_or_create(name="The Time Store", defaults={"show_in_nav": False})
 
         created_count = 0
@@ -58,9 +68,3 @@ class Command(BaseCommand):
             if created:
                 created_count += 1
         self.stdout.write(self.style.SUCCESS(f"Seeded {created_count} new products ({Product.objects.count()} total)."))
-
-        if not User.objects.filter(username="admin").exists():
-            User.objects.create_superuser("admin", "admin@thetimestore.test", "TimeStore@2025")
-            self.stdout.write(self.style.SUCCESS("Created dev admin user → username: admin / password: TimeStore@2025"))
-        else:
-            self.stdout.write("Admin user already exists, skipped.")

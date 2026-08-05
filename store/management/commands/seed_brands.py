@@ -10,6 +10,10 @@ class Command(BaseCommand):
     help = "Seed the retail Brand records shown in the navbar, plus the in-house 'The Time Store' brand."
 
     def handle(self, *args, **options):
+        if Brand.objects.exclude(name=HOUSE_BRAND).exists():
+            self.stdout.write("Brands already seeded, skipping brand creation.")
+            return
+
         created_count = 0
 
         house, created = Brand.objects.get_or_create(
