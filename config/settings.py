@@ -79,14 +79,49 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+import os
 import dj_database_url
 
-DATABASES = {
-    'default': dj_database_url.config(
-        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
-        conn_max_age=600
-    )
-}
+DATABASE_URL = os.environ.get("DATABASE_URL")
+PGHOST = os.environ.get("PGHOST")
+
+if DATABASE_URL:
+    DATABASES = {
+        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
+    }
+    # Ensure SSL is enabled for PostgreSQL
+    if DATABASES['default'].get('ENGINE') == 'django.db.backends.postgresql':
+        DATABASES['default'].setdefault('OPTIONS', {})['sslmode'] = 'require'
+elif PGHOST:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ.get("PGDATABASE"),
+            'USER': os.environ.get("PGUSER"),
+            'PASSWORD': os.environ.get("PGPASSWORD"),
+            'HOST': PGHOST,
+            'PORT': os.environ.get("PGPORT", "5432"),
+            'CONN_MAX_AGE': 600,
+            'OPTIONS': {
+                'sslmode': 'require',
+            }
+        }
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+
+print("----------------------------------------")
+print(f"DATABASE ENGINE LOADED: {DATABASES['default']['ENGINE']}")
+if DATABASES['default']['ENGINE'] == 'django.db.backends.postgresql':
+    print(f"CONNECTED TO POSTGRES: {DATABASES['default'].get('HOST')} / {DATABASES['default'].get('NAME')}")
+else:
+    print(f"CONNECTED TO SQLITE: {DATABASES['default'].get('NAME')}")
+print("----------------------------------------")
 
 
 # Password validation
