@@ -39,7 +39,7 @@
 
     <div class="card-panel" style="flex:1; min-width:300px; max-width: 480px;">
       <p class="mono" style="font-size:0.75rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent); margin-bottom:1.25rem;">Add a Sub-brand</p>
-      <form method="post">
+      <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {% if subbrand_form.errors %}
           <div class="card-panel" style="border-color:#B3261E; margin-bottom: 1.5rem; background: rgba(179,38,30,0.05); padding: 1.5rem;">
@@ -63,6 +63,10 @@
         <div class="form-field">
           <label for="{{ subbrand_form.name.id_for_label }}">Sub-brand Name</label>
           {{ subbrand_form.name }}
+        </div>
+        <div class="form-field">
+          <label for="{{ subbrand_form.logo.id_for_label }}">Sub-brand Logo/Image</label>
+          {{ subbrand_form.logo }}
         </div>
         <button type="submit" name="add_subbrand" class="btn btn-outline">+ Add Sub-brand</button>
       </form>

@@ -36,6 +36,7 @@ class Brand(models.Model):
 class SubBrand(models.Model):
     brand = models.ForeignKey(Brand, on_delete=models.CASCADE, related_name="sub_brands")
     name = models.CharField(max_length=60)
+    logo = models.ImageField(upload_to="sub_brands/", blank=True, null=True)
 
     class Meta:
         ordering = ["brand__name", "name"]
@@ -43,6 +44,12 @@ class SubBrand(models.Model):
 
     def __str__(self):
         return f"{self.brand.name} · {self.name}"
+
+    @property
+    def display_logo(self):
+        if self.logo:
+            return self.logo.url
+        return None
 
 
 class Product(models.Model):

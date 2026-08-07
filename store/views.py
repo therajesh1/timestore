@@ -256,7 +256,7 @@ def brand_manage_list(request):
         brands = brands.filter(products__category=category).distinct()
     if request.method == "POST" and "add_subbrand" in request.POST:
         form = BrandForm()
-        subbrand_form = SubBrandForm(request.POST)
+        subbrand_form = SubBrandForm(request.POST, request.FILES)
         if subbrand_form.is_valid():
             sub_brand = subbrand_form.save()
             messages.success(request, f"Sub-brand “{sub_brand.name}” added to {sub_brand.brand.name}.")
@@ -290,7 +290,7 @@ def brand_detail(request, pk):
             subbrand_form = SubBrandForm(initial={"brand": brand})
         else:
             form = BrandForm(instance=brand)
-            subbrand_form = SubBrandForm(request.POST)
+            subbrand_form = SubBrandForm(request.POST, request.FILES)
             if subbrand_form.is_valid():
                 sub_brand = subbrand_form.save()
                 messages.success(request, f"Sub-brand “{sub_brand.name}” added to {sub_brand.brand.name}.")

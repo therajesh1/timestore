@@ -39,8 +39,10 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'cloudinary_storage',
     'django.contrib.staticfiles',
     'store',
+    'cloudinary',
 ]
 
 MIDDLEWARE = [
@@ -163,9 +165,35 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+CLOUDINARY_URL = os.environ.get('CLOUDINARY_URL')
+CLOUDINARY_CLOUD_NAME = os.environ.get('CLOUDINARY_CLOUD_NAME')
+
+USE_CLOUDINARY = bool(CLOUDINARY_URL or CLOUDINARY_CLOUD_NAME)
+
+if USE_CLOUDINARY:
+    CLOUDINARY_STORAGE = {}
+    if CLOUDINARY_URL:
+        CLOUDINARY_STORAGE['CLOUDINARY_URL'] = CLOUDINARY_URL
+    else:
+        CLOUDINARY_STORAGE.update({
+            'CLOUD_NAME': CLOUDINARY_CLOUD_NAME,
+            'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
+            'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
+        })
+    
+    DEFAULT_STORAGE_BACKEND = "cloudinary_storage.storage.MediaCloudinaryStorage"
+    print("----------------------------------------")
+    print("MEDIA FILES STORAGE: CLOUDINARY ENABLED")
+    print("----------------------------------------")
+else:
+    DEFAULT_STORAGE_BACKEND = "django.core.files.storage.FileSystemStorage"
+    print("----------------------------------------")
+    print("MEDIA FILES STORAGE: LOCAL FILESYSTEM ENABLED")
+    print("----------------------------------------")
+
 STORAGES = {
     "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "BACKEND": DEFAULT_STORAGE_BACKEND,
     },
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
