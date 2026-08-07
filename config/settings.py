@@ -165,7 +165,11 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-CLOUDINARY_URL = os.environ.get('CLOUDINARY_URL')
+# If you want to configure Cloudinary entirely via code, paste your CLOUDINARY_URL here.
+# WARNING: Hardcoding credentials in code is a security risk if your GitHub repository is public.
+HARDCODED_CLOUDINARY_URL = ""
+
+CLOUDINARY_URL = os.environ.get('CLOUDINARY_URL') or HARDCODED_CLOUDINARY_URL
 CLOUDINARY_CLOUD_NAME = os.environ.get('CLOUDINARY_CLOUD_NAME')
 
 USE_CLOUDINARY = bool(CLOUDINARY_URL or CLOUDINARY_CLOUD_NAME)
