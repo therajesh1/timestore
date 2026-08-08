@@ -32,6 +32,7 @@ def product_list(request):
     category = request.GET.get("category", "")
     query = request.GET.get("q", "")
     brand_slug = request.GET.get("brand", "")
+    subbrand_id = request.GET.get("subbrand", "")
 
     valid_categories = [choice[0] for choice in Product.Category.choices]
     if category in valid_categories:
@@ -40,9 +41,18 @@ def product_list(request):
         products = products.filter(name__icontains=query) | products.filter(description__icontains=query)
 
     selected_brand = None
+    sub_brands = None
+    selected_subbrand = None
+
     if brand_slug:
         selected_brand = Brand.objects.filter(slug=brand_slug).first()
-        products = products.filter(brand__slug=brand_slug)
+        if selected_brand:
+            products = products.filter(brand=selected_brand)
+            sub_brands = selected_brand.sub_brands.all()
+            if subbrand_id:
+                selected_subbrand = sub_brands.filter(pk=subbrand_id).first()
+                if selected_subbrand:
+                    products = products.filter(sub_brand=selected_subbrand)
 
     context = {
         "products": products,
@@ -50,6 +60,8 @@ def product_list(request):
         "categories": valid_categories,
         "query": query,
         "selected_brand": selected_brand,
+        "sub_brands": sub_brands,
+        "selected_subbrand": selected_subbrand,
     }
     return render(request, "store/product_list.html", context)
 

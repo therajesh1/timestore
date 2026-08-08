@@ -43,12 +43,44 @@
           {% endfor %}
         </div>
       </div>
+    {% elif sub_brands.exists and not selected_subbrand %}
+      <!-- Sub-brands selector grid -->
+      <div class="wrist-watch-subbrands-section" style="margin-bottom: 3.5rem;">
+        <div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
+          <a href="{% url 'product_list' %}?category=Wrist+Watch" class="btn-link" style="display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle;"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            Back to Brands
+          </a>
+        </div>
+        <p class="mono" style="font-size:10px; letter-spacing:0.3em; text-transform:uppercase; color: var(--accent); margin-bottom:1.5rem; text-align: center;">Select {{ selected_brand.name }} Collection</p>
+        <div class="brands-grid">
+          {% for sb in sub_brands %}
+            <a href="{% url 'product_list' %}?category=Wrist+Watch&brand={{ selected_brand.slug }}&subbrand={{ sb.pk }}" class="brand-logo-card">
+              <div class="brand-logo-img-wrapper">
+                {% if sb.display_logo %}
+                  <img src="{{ sb.display_logo }}?v=3" alt="{{ sb.name }}" />
+                {% else %}
+                  <span class="mono" style="font-size: 0.9rem; font-weight: 600; color: var(--primary);">{{ sb.name }}</span>
+                {% endif %}
+              </div>
+              <span class="brand-logo-name">{{ sb.name }}</span>
+            </a>
+          {% endfor %}
+        </div>
+      </div>
     {% else %}
       <div style="margin-bottom: 2rem;">
-        <a href="{% url 'product_list' %}?category=Wrist+Watch" class="btn-link" style="display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle;"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-          Back to Brands
-        </a>
+        {% if selected_subbrand %}
+          <a href="{% url 'product_list' %}?category=Wrist+Watch&brand={{ selected_brand.slug }}" class="btn-link" style="display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle;"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            Back to Collections
+          </a>
+        {% else %}
+          <a href="{% url 'product_list' %}?category=Wrist+Watch" class="btn-link" style="display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle;"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            Back to Brands
+          </a>
+        {% endif %}
       </div>
     {% endif %}
   {% endif %}
@@ -64,6 +96,8 @@
 
   {% if category == 'Wrist Watch' and not selected_brand %}
     <!-- Do not show products until a brand is selected -->
+  {% elif category == 'Wrist Watch' and sub_brands.exists and not selected_subbrand %}
+    <!-- Do not show products until a subbrand is selected (if subbrands exist) -->
   {% else %}
     {% if products %}
       <div class="product-grid">
