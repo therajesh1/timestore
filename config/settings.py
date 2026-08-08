@@ -178,13 +178,25 @@ USE_CLOUDINARY = bool(CLOUDINARY_URL or CLOUDINARY_CLOUD_NAME)
 if USE_CLOUDINARY:
     CLOUDINARY_STORAGE = {}
     if CLOUDINARY_URL:
-        CLOUDINARY_STORAGE['CLOUDINARY_URL'] = CLOUDINARY_URL
-    else:
-        CLOUDINARY_STORAGE.update({
-            'CLOUD_NAME': CLOUDINARY_CLOUD_NAME,
+        try:
+            if CLOUDINARY_URL.startswith("cloudinary://"):
+                url_parts = CLOUDINARY_URL[13:]
+                auth_part, cloud_name = url_parts.split("@")
+                api_key, api_secret = auth_part.split(":")
+                CLOUDINARY_STORAGE = {
+                    'CLOUD_NAME': cloud_name,
+                    'API_KEY': api_key,
+                    'API_SECRET': api_secret,
+                }
+        except Exception:
+            pass
+            
+    if not CLOUDINARY_STORAGE.get('CLOUD_NAME'):
+        CLOUDINARY_STORAGE = {
+            'CLOUD_NAME': CLOUDINARY_CLOUD_NAME or os.environ.get('CLOUDINARY_CLOUD_NAME'),
             'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
             'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
-        })
+        }
     
     DEFAULT_STORAGE_BACKEND = "cloudinary_storage.storage.MediaCloudinaryStorage"
     print("----------------------------------------")
