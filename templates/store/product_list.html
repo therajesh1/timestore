@@ -2,25 +2,47 @@
 {% load static %}
 {% block content %}
 <section class="section">
-  <div style="margin-bottom: 2rem;">
-    {% if not category %}
-      <p class="eyebrow"><span class="gold-line"></span>Timepieces</p>
-      <h2 style="font-size: 2.75rem;">
-        {% if selected_brand %}{{ selected_brand.name }}{% elif query %}Results for "{{ query }}"{% else %}All <em>Timepieces</em>{% endif %}
-      </h2>
-      {% if selected_brand %}
-        <p style="margin-top: 0.5rem;"><a href="{% url 'product_list' %}" class="btn-link">Clear brand filter ×</a></p>
+  {% if selected_subbrand and selected_subbrand.display_banner %}
+    <div class="subbrand-banner" style="width: 100%; height: 260px; border-radius: 12px; overflow: hidden; margin-bottom: 2.5rem; position: relative; background: var(--secondary); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);">
+      <img src="{{ selected_subbrand.display_banner }}?v=3" alt="{{ selected_subbrand.name }}" style="width: 100%; height: 100%; object-fit: cover;" />
+      <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.85)); padding: 2rem; color: #fff;">
+        <p class="mono" style="font-size: 0.7rem; letter-spacing: 0.3em; text-transform: uppercase; margin-bottom: 0.5rem; color: var(--accent); font-weight: 600;">Collection / {{ category }}</p>
+        <h1 style="font-size: 2.5rem; font-weight: 700; margin: 0; letter-spacing: -0.02em; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">{{ selected_brand.name }} · {{ selected_subbrand.name }}</h1>
+      </div>
+    </div>
+  {% else %}
+    <div style="margin-bottom: 2rem;">
+      {% if not category %}
+        <p class="eyebrow"><span class="gold-line"></span>Timepieces</p>
+        <h2 style="font-size: 2.75rem;">
+          {% if selected_brand %}{{ selected_brand.name }}{% elif query %}Results for "{{ query }}"{% else %}All <em>Timepieces</em>{% endif %}
+        </h2>
+        {% if selected_brand %}
+          <p style="margin-top: 0.5rem;"><a href="{% url 'product_list' %}" class="btn-link">Clear brand filter ×</a></p>
+        {% endif %}
+      {% else %}
+        <p class="eyebrow"><span class="gold-line"></span>{{ category }}</p>
+        <h2 style="font-size: 2.75rem;">
+          {% if selected_subbrand %}
+            {{ selected_brand.name }} · {{ selected_subbrand.name }}
+          {% elif selected_brand %}
+            {{ selected_brand.name }}
+          {% else %}
+            {{ category }}
+          {% endif %}
+        </h2>
+        {% if selected_brand %}
+          <p style="margin-top: 0.5rem;">
+            {% if selected_subbrand %}
+              <a href="{% url 'product_list' %}?category={{ category }}&brand={{ selected_brand.slug }}" class="btn-link">Clear collection filter ×</a>
+            {% else %}
+              <a href="{% url 'product_list' %}?category={{ category }}" class="btn-link">Clear brand filter ×</a>
+            {% endif %}
+          </p>
+        {% endif %}
       {% endif %}
-    {% else %}
-      <p class="eyebrow"><span class="gold-line"></span>{{ category }}</p>
-      <h2 style="font-size: 2.75rem;">
-        {% if selected_brand %}{{ selected_brand.name }}{% else %}{{ category }}{% endif %}
-      </h2>
-      {% if selected_brand %}
-        <p style="margin-top: 0.5rem;"><a href="{% url 'product_list' %}?category={{ category }}" class="btn-link">Clear brand filter ×</a></p>
-      {% endif %}
-    {% endif %}
-  </div>
+    </div>
+  {% endif %}
 
   {% if category == 'Wrist Watch' %}
     {% if not selected_brand %}
