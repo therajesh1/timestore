@@ -33,6 +33,10 @@
       <div class="form-field">{{ form.logo_static.label_tag }}{{ form.logo_static }}</div>
       <div class="form-field" style="display:flex; align-items:center; gap:0.5rem;">{{ form.show_in_nav }}{{ form.show_in_nav.label_tag }}</div>
       <div class="form-field">{{ form.order.label_tag }}{{ form.order }}</div>
+      <div class="form-field">
+        {{ form.banner.label_tag }}{{ form.banner }}
+        {% if brand.banner %}<p class="mono" style="font-size:0.75rem; color:var(--muted-foreground); margin-top:0.35rem;">Current: {{ brand.banner.name }}</p>{% endif %}
+      </div>
       <button type="submit" name="save_brand" class="btn btn-accent">Save Changes</button>
     </form>
   </div>
@@ -98,10 +102,6 @@
       <div class="form-field" style="margin-bottom:0;">
         <label for="{{ subbrand_form.logo.id_for_label }}">Sub-brand Logo/Image</label>
         {{ subbrand_form.logo }}
-      </div>
-      <div class="form-field" style="margin-bottom:0;">
-        <label for="{{ subbrand_form.banner.id_for_label }}">Sub-brand Banner Image</label>
-        {{ subbrand_form.banner }}
       </div>
       <button type="submit" class="btn btn-outline" style="align-self:flex-start;">+ Add Sub-brand</button>
     </form>

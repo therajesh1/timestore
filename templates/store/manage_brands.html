@@ -33,6 +33,7 @@
         <div class="form-field">{{ form.logo_static.label_tag }}{{ form.logo_static }}</div>
         <div class="form-field" style="display:flex; align-items:center; gap:0.5rem;">{{ form.show_in_nav }}{{ form.show_in_nav.label_tag }}</div>
         <div class="form-field">{{ form.order.label_tag }}{{ form.order }}</div>
+        <div class="form-field">{{ form.banner.label_tag }}{{ form.banner }}</div>
         <button type="submit" class="btn btn-accent">Add Brand</button>
       </form>
     </div>
@@ -67,10 +68,6 @@
         <div class="form-field">
           <label for="{{ subbrand_form.logo.id_for_label }}">Sub-brand Logo/Image</label>
           {{ subbrand_form.logo }}
-        </div>
-        <div class="form-field">
-          <label for="{{ subbrand_form.banner.id_for_label }}">Sub-brand Banner Image</label>
-          {{ subbrand_form.banner }}
         </div>
         <button type="submit" name="add_subbrand" class="btn btn-outline">+ Add Sub-brand</button>
       </form>

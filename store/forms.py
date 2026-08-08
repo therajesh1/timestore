@@ -57,13 +57,13 @@ class ProductForm(forms.ModelForm):
 class BrandForm(forms.ModelForm):
     class Meta:
         model = Brand
-        fields = ["name", "logo", "logo_static", "show_in_nav", "order"]
+        fields = ["name", "logo", "logo_static", "show_in_nav", "order", "banner"]
 
 
 class SubBrandForm(forms.ModelForm):
     class Meta:
         model = SubBrand
-        fields = ["brand", "name", "logo", "banner"]
+        fields = ["brand", "name", "logo"]
 
 
 class OrderStatusForm(forms.ModelForm):

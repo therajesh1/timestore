@@ -32,12 +32,19 @@ class Brand(models.Model):
             return self.logo.url
         return None
 
+    banner = models.ImageField(upload_to="brands/banners/", blank=True, null=True)
+
+    @property
+    def display_banner(self):
+        if self.banner:
+            return self.banner.url
+        return None
+
 
 class SubBrand(models.Model):
     brand = models.ForeignKey(Brand, on_delete=models.CASCADE, related_name="sub_brands")
     name = models.CharField(max_length=60)
     logo = models.ImageField(upload_to="sub_brands/", blank=True, null=True)
-    banner = models.ImageField(upload_to="sub_brands/banners/", blank=True, null=True)
 
     class Meta:
         ordering = ["brand__name", "name"]
@@ -50,12 +57,6 @@ class SubBrand(models.Model):
     def display_logo(self):
         if self.logo:
             return self.logo.url
-        return None
-
-    @property
-    def display_banner(self):
-        if self.banner:
-            return self.banner.url
         return None
 
 
