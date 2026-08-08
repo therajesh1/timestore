@@ -2,8 +2,8 @@
 {% load static %}
 {% block content %}
 {% if selected_brand and selected_brand.display_banner %}
-  <div class="brand-banner-full" style="width: 100%; background: var(--secondary); overflow: hidden; border-bottom: 1px solid var(--border);">
-    <img src="{{ selected_brand.display_banner }}?v=3" alt="{{ selected_brand.name }}" style="width: 100%; height: auto; min-height: 180px; max-height: 380px; object-fit: cover; display: block;" />
+  <div class="brand-banner-full">
+    <img src="{{ selected_brand.display_banner }}?v=3" alt="{{ selected_brand.name }}" class="brand-banner-img" />
   </div>
 {% endif %}
 
