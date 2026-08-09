@@ -37,6 +37,10 @@
         {{ form.banner.label_tag }}{{ form.banner }}
         {% if brand.banner %}<p class="mono" style="font-size:0.75rem; color:var(--muted-foreground); margin-top:0.35rem;">Current: {{ brand.banner.name }}</p>{% endif %}
       </div>
+      <div class="form-field">
+        {{ form.banner_mobile.label_tag }}{{ form.banner_mobile }}
+        {% if brand.banner_mobile %}<p class="mono" style="font-size:0.75rem; color:var(--muted-foreground); margin-top:0.35rem;">Current: {{ brand.banner_mobile.name }}</p>{% endif %}
+      </div>
       <button type="submit" name="save_brand" class="btn btn-accent">Save Changes</button>
     </form>
   </div>

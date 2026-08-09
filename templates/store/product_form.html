@@ -178,6 +178,13 @@
             {{ form.featured }}{{ form.featured.label_tag }}
           </div>
         </div>
+        {% if form.color_variants %}
+          <div class="form-field">
+            {{ form.color_variants.label_tag }}
+            {{ form.color_variants }}
+            <p class="helptext">{{ form.color_variants.help_text }}</p>
+          </div>
+        {% endif %}
         <div class="form-field">{{ form.remark.label_tag }}{{ form.remark }}</div>
       </div>
     {% endif %}
@@ -288,9 +295,11 @@
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       var brand = document.getElementById("id_brand");
+      var subbrand = document.getElementById("id_sub_brand");
       var gender = document.getElementById("id_gender");
       var model = document.getElementById("id_model_number");
       var colour = document.getElementById("id_colour");
+      var categoryField = document.querySelector("input[name='category']");
       var nameInput = document.getElementById("id_name");
 
       function updateProductName() {
@@ -301,6 +310,14 @@
           brandText = brand.options[brand.selectedIndex].text;
           if (brandText.includes("---")) {
             brandText = "";
+          }
+        }
+
+        var subbrandText = "";
+        if (subbrand && subbrand.selectedIndex >= 0) {
+          subbrandText = subbrand.options[subbrand.selectedIndex].text;
+          if (subbrandText.includes("---")) {
+            subbrandText = "";
           }
         }
 
@@ -318,20 +335,31 @@
 
         var modelText = model ? model.value.trim() : "";
         var colourText = colour ? colour.value.trim() : "";
+        var categoryText = categoryField ? categoryField.value.trim() : "";
 
         var parts = [];
         if (brandText) parts.push(brandText);
-        if (genderText) parts.push(genderText);
+        if (subbrandText) parts.push(subbrandText);
         if (modelText) parts.push(modelText);
+        if (genderText) parts.push(genderText);
         if (colourText) parts.push(colourText);
+        if (categoryText) parts.push(categoryText);
 
         nameInput.value = parts.join(" ");
       }
 
-      if (brand && gender && model && colour) {
-        [brand, gender, model, colour].forEach(function (el) {
-          el.addEventListener("input", updateProductName);
-          el.addEventListener("change", updateProductName);
+      const inputsToListen = [brand, subbrand, gender, model, colour, categoryField].filter(Boolean);
+      inputsToListen.forEach(function (el) {
+        el.addEventListener("input", updateProductName);
+        el.addEventListener("change", updateProductName);
+      });
+
+      // Mirror MRP to Selling Price dynamically
+      var mrpInput = document.getElementById("id_mrp");
+      var priceInput = document.getElementById("id_price");
+      if (mrpInput && priceInput) {
+        mrpInput.addEventListener("input", function() {
+          priceInput.value = mrpInput.value;
         });
       }
 

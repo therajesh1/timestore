@@ -3,7 +3,12 @@
 {% block content %}
 {% if selected_brand and selected_brand.display_banner %}
   <div class="brand-banner-full">
-    <img src="{{ selected_brand.display_banner }}?v=3" alt="{{ selected_brand.name }}" class="brand-banner-img" />
+    <picture style="width:100%; display:block;">
+      {% if selected_brand.display_banner_mobile %}
+        <source media="(max-width: 767px)" srcset="{{ selected_brand.display_banner_mobile }}?v=3" />
+      {% endif %}
+      <img src="{{ selected_brand.display_banner }}?v=3" alt="{{ selected_brand.name }}" class="brand-banner-img" />
+    </picture>
   </div>
 {% endif %}
 

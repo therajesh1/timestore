@@ -35,7 +35,7 @@ class ProductForm(forms.ModelForm):
             "stock", "featured", "remark",
             "warranty_period", "glass_material", "strap_material",
             "movement", "strap_color", "dial_color", "case_material", "features",
-            "gender", "case_size",
+            "gender", "case_size", "color_variants",
         ]
         widgets = {
             "description": forms.Textarea(attrs={"rows": 3}),
@@ -48,6 +48,10 @@ class ProductForm(forms.ModelForm):
         self.fields["ref"].disabled = True
         self.fields["ref"].required = False
         self.fields["ref"].help_text = "Auto-generated from the product count."
+        if "color_variants" in self.fields:
+            self.fields["color_variants"].help_text = "Select other color variants of this timepiece to link them."
+            if self.instance and self.instance.pk:
+                self.fields["color_variants"].queryset = Product.objects.exclude(pk=self.instance.pk)
         if simple:
             for name in list(self.fields):
                 if name not in self.SIMPLE_FIELDS:
@@ -57,7 +61,7 @@ class ProductForm(forms.ModelForm):
 class BrandForm(forms.ModelForm):
     class Meta:
         model = Brand
-        fields = ["name", "logo", "logo_static", "show_in_nav", "order", "banner"]
+        fields = ["name", "logo", "logo_static", "show_in_nav", "order", "banner", "banner_mobile"]
 
 
 class SubBrandForm(forms.ModelForm):

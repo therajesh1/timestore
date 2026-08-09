@@ -33,11 +33,18 @@ class Brand(models.Model):
         return None
 
     banner = models.ImageField(upload_to="brands/banners/", blank=True, null=True)
+    banner_mobile = models.ImageField(upload_to="brands/banners/mobile/", blank=True, null=True)
 
     @property
     def display_banner(self):
         if self.banner:
             return self.banner.url
+        return None
+
+    @property
+    def display_banner_mobile(self):
+        if self.banner_mobile:
+            return self.banner_mobile.url
         return None
 
 
@@ -123,12 +130,31 @@ class Product(models.Model):
     stock = models.PositiveIntegerField(default=5)
     featured = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    color_variants = models.ManyToManyField("self", blank=True, symmetrical=True)
 
     class Meta:
         ordering = ["-created_at"]
 
     def __str__(self):
         return f"{self.ref} · {self.name}"
+
+    def save(self, *args, **kwargs):
+        self.price = self.mrp
+        if self.category == Product.Category.WRIST_WATCH:
+            parts = []
+            if self.brand:
+                parts.append(self.brand.name)
+            if self.sub_brand:
+                parts.append(self.sub_brand.name)
+            if self.model_number:
+                parts.append(self.model_number)
+            if self.gender and self.gender != 'Unisex':
+                parts.append(self.gender)
+            if self.colour:
+                parts.append(self.colour)
+            if parts:
+                self.name = " ".join(parts)
+        super().save(*args, **kwargs)
 
     def get_absolute_url(self):
         return reverse("product_detail", args=[self.pk])

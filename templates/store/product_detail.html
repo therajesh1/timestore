@@ -21,6 +21,23 @@
       <p class="mono" style="font-size:9px; letter-spacing:0.3em; text-transform:uppercase; color:var(--muted-foreground);">{{ product.brand.name|default:"Atelier" }} · {{ product.ref }}</p>
       <h1 style="font-size: 2.75rem; margin: 0.75rem 0 1.25rem;">{{ product.name }}</h1>
       <p class="mono" style="font-size:1.5rem; color: var(--accent); margin-bottom: 1.5rem;">{{ product.formatted_price }}</p>
+
+      {% if product.color_variants.exists %}
+        <div style="margin-bottom: 2rem;">
+          <p class="mono" style="font-size:0.75rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--muted-foreground); margin-bottom:0.75rem;">Color Choices:</p>
+          <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+            <span style="display:inline-flex; align-items:center; gap:0.5rem; padding:0.5rem 1rem; border-radius:4px; border:1px solid var(--accent); background:rgba(212,175,55,0.1); color:#fff; font-size:0.85rem; font-weight:600;">
+              {% if product.colour %}{{ product.colour }}{% else %}Default{% endif %} (Active)
+            </span>
+            {% for variant in product.color_variants.all %}
+              <a href="{{ variant.get_absolute_url }}" style="display:inline-flex; align-items:center; gap:0.5rem; padding:0.5rem 1rem; border-radius:4px; border:1px solid var(--border); background:var(--card); color:var(--muted-foreground); text-decoration:none; font-size:0.85rem; font-weight:500; transition:all 0.2s ease;" onmouseover="this.style.borderColor='var(--accent)'; this.style.color='#fff';" onmouseout="this.style.borderColor='var(--border)'; this.style.color='var(--muted-foreground)';">
+                {% if variant.colour %}{{ variant.colour }}{% else %}Variant {{ forloop.counter }}{% endif %}
+              </a>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
       {% if product.description %}
         <p style="color: var(--muted-foreground); line-height: 1.8; margin-bottom: 2rem;">{{ product.description }}</p>
       {% endif %}
