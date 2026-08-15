@@ -19,7 +19,7 @@
     </div>
     <div>
       <p class="mono" style="font-size:9px; letter-spacing:0.3em; text-transform:uppercase; color:var(--muted-foreground);">{{ product.brand.name|default:"Atelier" }} · {{ product.ref }}</p>
-      <h1 style="font-size: 2.75rem; margin: 0.75rem 0 1.25rem;">{{ product.name }}</h1>
+      <h1 id="product-title" data-default-name="{{ product.name }}" data-default-color="{{ product.colour }}" style="font-size: 2.75rem; margin: 0.75rem 0 1.25rem;">{{ product.name }}</h1>
       <p class="mono" style="font-size:1.5rem; color: var(--accent); margin-bottom: 1.5rem;">{{ product.formatted_price }}</p>
 
       {% if product.custom_colors.exists %}
@@ -195,6 +195,23 @@
     const mainImg = document.getElementById('main-product-img');
     if (mainImg) {
       mainImg.src = images[0];
+    }
+
+    const productTitle = document.getElementById('product-title');
+    if (productTitle) {
+      const defaultName = productTitle.getAttribute('data-default-name');
+      const defaultColor = productTitle.getAttribute('data-default-color');
+      
+      if (colorId === 'default') {
+        productTitle.textContent = defaultName;
+      } else {
+        const colorName = btn.textContent.trim();
+        let baseName = defaultName;
+        if (defaultColor && defaultName.endsWith(defaultColor)) {
+          baseName = defaultName.slice(0, -defaultColor.length).trim();
+        }
+        productTitle.textContent = baseName + " " + colorName;
+      }
     }
 
     let galleryThumbnails = document.querySelector('.gallery-thumbnails');
