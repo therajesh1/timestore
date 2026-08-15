@@ -10,7 +10,7 @@ from django.views.decorators.http import require_POST
 
 from .cart import Cart
 from .content import FEATURES, GENDER_TILES, HERO_SLIDES
-from .forms import BrandForm, CheckoutForm, OrderStatusForm, ProductForm, RegisterForm, SubBrandForm
+from .forms import BrandForm, CheckoutForm, OrderStatusForm, ProductForm, RegisterForm, SubBrandForm, ProductColorFormSet
 from .models import Brand, Order, OrderItem, Product, SubBrand
 
 
@@ -205,28 +205,35 @@ SIMPLE_CATEGORIES = {
 @staff_member_required
 def product_create(request):
     selected_category = request.GET.get("category", Product.Category.WRIST_WATCH)
+    is_simple = selected_category in SIMPLE_CATEGORIES
     if request.method == "POST":
         selected_category = request.POST.get("category", selected_category)
-        form = ProductForm(request.POST, request.FILES, simple=selected_category in SIMPLE_CATEGORIES)
-        if form.is_valid():
+        is_simple = selected_category in SIMPLE_CATEGORIES
+        form = ProductForm(request.POST, request.FILES, simple=is_simple)
+        formset = ProductColorFormSet(request.POST, request.FILES, prefix="custom_colors") if not is_simple else None
+        if form.is_valid() and (is_simple or formset.is_valid()):
             product = form.save(commit=False)
             product.ref = _next_product_ref()
-            if selected_category in SIMPLE_CATEGORIES:
+            if is_simple:
                 default_brand, _ = Brand.objects.get_or_create(
                     name="Generic",
                     defaults={"show_in_nav": False}
                 )
                 product.brand = default_brand
             product.save()
+            if not is_simple:
+                formset.instance = product
+                formset.save()
             messages.success(request, f"{product.name} added to the catalog.")
             return redirect("product_manage_list")
     else:
         form = ProductForm(
             initial={"ref": _next_product_ref(), "category": selected_category},
-            simple=selected_category in SIMPLE_CATEGORIES,
+            simple=is_simple,
         )
+        formset = ProductColorFormSet(prefix="custom_colors") if not is_simple else None
     return render(request, "store/product_form.html", {
-        "form": form, "is_new": True,
+        "form": form, "formset": formset, "is_new": True,
         "categories": Product.Category.choices, "selected_category": selected_category,
     })
 
@@ -237,14 +244,18 @@ def product_update(request, pk):
     is_simple = product.category in SIMPLE_CATEGORIES
     if request.method == "POST":
         form = ProductForm(request.POST, request.FILES, instance=product, simple=is_simple)
-        if form.is_valid():
+        formset = ProductColorFormSet(request.POST, request.FILES, instance=product, prefix="custom_colors") if not is_simple else None
+        if form.is_valid() and (is_simple or formset.is_valid()):
             form.save()
+            if not is_simple:
+                formset.save()
             messages.success(request, f"{product.name} updated.")
             return redirect("product_manage_list")
     else:
         form = ProductForm(instance=product, simple=is_simple)
+        formset = ProductColorFormSet(instance=product, prefix="custom_colors") if not is_simple else None
     return render(request, "store/product_form.html", {
-        "form": form, "is_new": False, "product": product,
+        "form": form, "formset": formset, "is_new": False, "product": product,
         "categories": Product.Category.choices, "selected_category": product.category,
     })
 

@@ -22,17 +22,21 @@
       <h1 style="font-size: 2.75rem; margin: 0.75rem 0 1.25rem;">{{ product.name }}</h1>
       <p class="mono" style="font-size:1.5rem; color: var(--accent); margin-bottom: 1.5rem;">{{ product.formatted_price }}</p>
 
-      {% if product.color_variants.exists %}
+      {% if product.custom_colors.exists %}
         <div style="margin-bottom: 2rem;">
           <p class="mono" style="font-size:0.75rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--muted-foreground); margin-bottom:0.75rem;">Color Choices:</p>
           <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-            <span style="display:inline-flex; align-items:center; gap:0.5rem; padding:0.5rem 1rem; border-radius:4px; border:1px solid var(--accent); background:rgba(212,175,55,0.1); color:#fff; font-size:0.85rem; font-weight:600;">
-              {% if product.colour %}{{ product.colour }}{% else %}Default{% endif %} (Active)
-            </span>
-            {% for variant in product.color_variants.all %}
-              <a href="{{ variant.get_absolute_url }}" style="display:inline-flex; align-items:center; gap:0.5rem; padding:0.5rem 1rem; border-radius:4px; border:1px solid var(--border); background:var(--card); color:var(--muted-foreground); text-decoration:none; font-size:0.85rem; font-weight:500; transition:all 0.2s ease;" onmouseover="this.style.borderColor='var(--accent)'; this.style.color='#fff';" onmouseout="this.style.borderColor='var(--border)'; this.style.color='var(--muted-foreground)';">
-                {% if variant.colour %}{{ variant.colour }}{% else %}Variant {{ forloop.counter }}{% endif %}
-              </a>
+            <button type="button" class="color-choice-btn active" onclick="selectColor('default', this)" 
+                    data-images='[{% for img in product.all_images %}"{{ img }}"{% if not forloop.last %},{% endif %}{% endfor %}]'>
+              {% if product.colour %}{{ product.colour }}{% else %}Default{% endif %}
+            </button>
+            {% for custom_color in product.custom_colors.all %}
+              {% if custom_color.all_images %}
+                <button type="button" class="color-choice-btn" onclick="selectColor('color-{{ custom_color.pk }}', this)"
+                        data-images='[{% for img in custom_color.all_images %}"{{ img }}"{% if not forloop.last %},{% endif %}{% endfor %}]'>
+                  {{ custom_color.color_name }}
+                </button>
+              {% endif %}
             {% endfor %}
           </div>
         </div>
@@ -140,6 +144,29 @@
   @media (min-width: 768px) {
     .product-detail-grid { grid-template-columns: 1fr 1fr !important; }
   }
+  .color-choice-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--muted-foreground);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .color-choice-btn:hover {
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .color-choice-btn.active {
+    border-color: var(--accent) !important;
+    background: rgba(212, 175, 55, 0.1) !important;
+    color: #fff !important;
+  }
 </style>
 
 <script>
@@ -155,6 +182,53 @@
     const buttons = document.querySelectorAll('.thumb-btn');
     buttons.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
+  }
+
+  function selectColor(colorId, btn) {
+    const images = JSON.parse(btn.getAttribute('data-images'));
+    if (!images || images.length === 0) return;
+
+    const colorBtns = document.querySelectorAll('.color-choice-btn');
+    colorBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    const mainImg = document.getElementById('main-product-img');
+    if (mainImg) {
+      mainImg.src = images[0];
+    }
+
+    let galleryThumbnails = document.querySelector('.gallery-thumbnails');
+    if (images.length > 1) {
+      if (!galleryThumbnails) {
+        const productGallery = document.querySelector('.product-gallery');
+        if (productGallery) {
+          galleryThumbnails = document.createElement('div');
+          galleryThumbnails.className = 'gallery-thumbnails';
+          productGallery.appendChild(galleryThumbnails);
+        }
+      }
+      if (galleryThumbnails) {
+        galleryThumbnails.innerHTML = '';
+        images.forEach((imgUrl, index) => {
+          const thumbBtn = document.createElement('button');
+          thumbBtn.type = 'button';
+          thumbBtn.className = 'thumb-btn' + (index === 0 ? ' active' : '');
+          thumbBtn.onclick = function() {
+            setMainImage(imgUrl, this);
+          };
+          const img = document.createElement('img');
+          img.src = imgUrl;
+          img.alt = '';
+          thumbBtn.appendChild(img);
+          galleryThumbnails.appendChild(thumbBtn);
+        });
+        galleryThumbnails.style.display = 'flex';
+      }
+    } else {
+      if (galleryThumbnails) {
+        galleryThumbnails.remove();
+      }
+    }
   }
 </script>
 {% endblock %}

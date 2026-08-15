@@ -1,10 +1,15 @@
 from django.contrib import admin
 
-from .models import Brand, Order, OrderItem, Product, Profile, SubBrand
+from .models import Brand, Order, OrderItem, Product, ProductColor, Profile, SubBrand
 
 
 class SubBrandInline(admin.TabularInline):
     model = SubBrand
+    extra = 1
+
+
+class ProductColorInline(admin.TabularInline):
+    model = ProductColor
     extra = 1
 
 
@@ -38,6 +43,7 @@ class ProductAdmin(admin.ModelAdmin):
     autocomplete_fields = ("brand", "sub_brand")
     ordering = ("-created_at",)
     readonly_fields = ("ref", "created_at")
+    inlines = [ProductColorInline]
     fieldsets = (
         ("Product Details", {
             "fields": (

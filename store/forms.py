@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 
-from .models import Brand, Order, Product, SubBrand
+from .models import Brand, Order, Product, ProductColor, SubBrand
 
 
 class RegisterForm(UserCreationForm):
@@ -35,7 +35,7 @@ class ProductForm(forms.ModelForm):
             "stock", "featured", "remark",
             "warranty_period", "glass_material", "strap_material",
             "movement", "strap_color", "dial_color", "case_material", "features",
-            "gender", "case_size", "color_variants",
+            "gender", "case_size",
         ]
         widgets = {
             "description": forms.Textarea(attrs={"rows": 3}),
@@ -48,10 +48,6 @@ class ProductForm(forms.ModelForm):
         self.fields["ref"].disabled = True
         self.fields["ref"].required = False
         self.fields["ref"].help_text = "Auto-generated from the product count."
-        if "color_variants" in self.fields:
-            self.fields["color_variants"].help_text = "Select other color variants of this timepiece to link them."
-            if self.instance and self.instance.pk:
-                self.fields["color_variants"].queryset = Product.objects.exclude(pk=self.instance.pk)
         if simple:
             for name in list(self.fields):
                 if name not in self.SIMPLE_FIELDS:
@@ -74,3 +70,12 @@ class OrderStatusForm(forms.ModelForm):
     class Meta:
         model = Order
         fields = ["status"]
+
+
+ProductColorFormSet = forms.inlineformset_factory(
+    Product,
+    ProductColor,
+    fields=("color_name", "image1", "image2", "image3", "image4"),
+    extra=0,
+    can_delete=True,
+)

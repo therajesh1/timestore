@@ -178,15 +178,96 @@
             {{ form.featured }}{{ form.featured.label_tag }}
           </div>
         </div>
-        {% if form.color_variants %}
-          <div class="form-field">
-            {{ form.color_variants.label_tag }}
-            {{ form.color_variants }}
-            <p class="helptext">{{ form.color_variants.help_text }}</p>
-          </div>
-        {% endif %}
         <div class="form-field">{{ form.remark.label_tag }}{{ form.remark }}</div>
       </div>
+
+      {% if formset %}
+        <div class="card-panel" style="margin-bottom: 2rem;" id="custom-colors-section">
+          <p class="mono" style="font-size:0.75rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent); margin-bottom:1.25rem;">Custom Colours</p>
+          {{ formset.management_form }}
+          <div id="custom-colors-list">
+            {% for color_form in formset %}
+              <div class="custom-color-form card-panel" style="background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.08); margin-bottom: 1.5rem; padding: 1.5rem; position: relative;">
+                {{ color_form.id }}
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                  <p class="mono" style="font-size:0.8rem; color:var(--accent); margin:0;">Colour #{{ forloop.counter }}</p>
+                  {% if color_form.instance.pk %}
+                    <div style="display: flex; align-items: center; gap: 0.25rem;">
+                      {{ color_form.DELETE }}
+                      <label for="{{ color_form.DELETE.id_for_label }}" style="font-size:0.8rem; color:#B3261E; cursor:pointer;">Delete this colour</label>
+                    </div>
+                  {% else %}
+                    <button type="button" class="btn btn-outline btn-sm remove-color-btn" onclick="removeColorForm(this)" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Remove</button>
+                  {% endif %}
+                </div>
+                <div class="form-field">
+                  {{ color_form.color_name.label_tag }}
+                  {{ color_form.color_name }}
+                  {% if color_form.color_name.errors %}<p class="form-errors">{{ color_form.color_name.errors|striptags }}</p>{% endif %}
+                </div>
+                <div class="form-row-triple">
+                  <div class="form-field">
+                    <label>Image 1</label>
+                    {{ color_form.image1 }}
+                    {% if color_form.instance.image1 %}<p class="mono" style="font-size:0.7rem; color:var(--muted-foreground); margin-top:0.25rem;">Current: {{ color_form.instance.image1.name }}</p>{% endif %}
+                  </div>
+                  <div class="form-field">
+                    <label>Image 2</label>
+                    {{ color_form.image2 }}
+                    {% if color_form.instance.image2 %}<p class="mono" style="font-size:0.7rem; color:var(--muted-foreground); margin-top:0.25rem;">Current: {{ color_form.instance.image2.name }}</p>{% endif %}
+                  </div>
+                  <div class="form-field">
+                    <label>Image 3</label>
+                    {{ color_form.image3 }}
+                    {% if color_form.instance.image3 %}<p class="mono" style="font-size:0.7rem; color:var(--muted-foreground); margin-top:0.25rem;">Current: {{ color_form.instance.image3.name }}</p>{% endif %}
+                  </div>
+                </div>
+                <div class="form-row-triple" style="margin-top: 1rem;">
+                  <div class="form-field" style="grid-column: span 1;">
+                    <label>Image 4</label>
+                    {{ color_form.image4 }}
+                    {% if color_form.instance.image4 %}<p class="mono" style="font-size:0.7rem; color:var(--muted-foreground); margin-top:0.25rem;">Current: {{ color_form.instance.image4.name }}</p>{% endif %}
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+          <button type="button" class="btn btn-outline" id="add-color-btn" style="margin-top: 0.5rem; font-size: 0.85rem; padding: 0.5rem 1rem;">+ Add Custom Colour</button>
+        </div>
+
+        <template id="empty-color-form-template">
+          <div class="custom-color-form card-panel" style="background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.08); margin-bottom: 1.5rem; padding: 1.5rem; position: relative;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+              <p class="mono" style="font-size:0.8rem; color:var(--accent); margin:0;">Colour #__prefix_display__</p>
+              <button type="button" class="btn btn-outline btn-sm remove-color-btn" onclick="removeColorForm(this)" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Remove</button>
+            </div>
+            <div class="form-field">
+              <label for="{{ formset.empty_form.color_name.id_for_label }}">Colour Name</label>
+              {{ formset.empty_form.color_name }}
+            </div>
+            <div class="form-row-triple">
+              <div class="form-field">
+                <label for="{{ formset.empty_form.image1.id_for_label }}">Image 1</label>
+                {{ formset.empty_form.image1 }}
+              </div>
+              <div class="form-field">
+                <label for="{{ formset.empty_form.image2.id_for_label }}">Image 2</label>
+                {{ formset.empty_form.image2 }}
+              </div>
+              <div class="form-field">
+                <label for="{{ formset.empty_form.image3.id_for_label }}">Image 3</label>
+                {{ formset.empty_form.image3 }}
+              </div>
+            </div>
+            <div class="form-row-triple" style="margin-top: 1rem;">
+              <div class="form-field" style="grid-column: span 1;">
+                <label for="{{ formset.empty_form.image4.id_for_label }}">Image 4</label>
+                {{ formset.empty_form.image4 }}
+              </div>
+            </div>
+          </div>
+        </template>
+      {% endif %}
     {% endif %}
 
     <div style="display:flex; gap:1rem; align-items:center; flex-wrap:wrap; margin-top: 2rem;">
@@ -583,6 +664,66 @@
             return;
           }
           openPreview();
+        });
+      }
+
+      // Dynamic Formset for Custom Colors
+      const addColorBtn = document.getElementById("add-color-btn");
+      const colorsList = document.getElementById("custom-colors-list");
+      const totalForms = document.getElementById("id_custom_colors-TOTAL_FORMS");
+
+      if (addColorBtn && colorsList && totalForms) {
+        addColorBtn.addEventListener("click", function() {
+          const currentFormCount = parseInt(totalForms.value);
+          const template = document.getElementById("empty-color-form-template");
+          if (!template) return;
+          
+          let templateHtml = template.innerHTML;
+          
+          const newFormHtml = templateHtml
+            .replace(/__prefix__/g, currentFormCount)
+            .replace(/__prefix_display__/g, currentFormCount + 1);
+          
+          const tempDiv = document.createElement("div");
+          tempDiv.innerHTML = newFormHtml;
+          const newFormNode = tempDiv.firstElementChild;
+          
+          colorsList.appendChild(newFormNode);
+          
+          totalForms.value = currentFormCount + 1;
+        });
+      }
+
+      window.removeColorForm = function(button) {
+        const formPanel = button.closest(".custom-color-form");
+        if (formPanel) {
+          formPanel.remove();
+          reindexColorForms();
+        }
+      };
+
+      function reindexColorForms() {
+        if (!colorsList || !totalForms) return;
+        const forms = colorsList.querySelectorAll(".custom-color-form");
+        totalForms.value = forms.length;
+        forms.forEach((form, index) => {
+          const displayLabel = form.querySelector(".mono");
+          if (displayLabel) {
+            displayLabel.textContent = "Colour #" + (index + 1);
+          }
+          const inputs = form.querySelectorAll("input, select, textarea, label");
+          inputs.forEach(el => {
+            if (el.tagName === "LABEL" && el.hasAttribute("for")) {
+              el.setAttribute("for", el.getAttribute("for").replace(/custom_colors-\d+-/g, `custom_colors-${index}-`));
+            } else {
+              if (el.hasAttribute("name")) {
+                el.setAttribute("name", el.getAttribute("name").replace(/custom_colors-\d+-/g, `custom_colors-${index}-`));
+              }
+              if (el.hasAttribute("id")) {
+                el.setAttribute("id", el.getAttribute("id").replace(/custom_colors-\d+-/g, `custom_colors-${index}-`));
+              }
+            }
+          });
         });
       }
 

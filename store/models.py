@@ -130,7 +130,6 @@ class Product(models.Model):
     stock = models.PositiveIntegerField(default=5)
     featured = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    color_variants = models.ManyToManyField("self", blank=True, symmetrical=True)
 
     class Meta:
         ordering = ["-created_at"]
@@ -231,3 +230,34 @@ class Profile(models.Model):
 
     def __str__(self):
         return f"Profile · {self.user}"
+
+
+class ProductColor(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="custom_colors")
+    color_name = models.CharField("Colour Name", max_length=60)
+    image1 = models.ImageField("Image 1", upload_to="products/colors/", blank=True, null=True)
+    image2 = models.ImageField("Image 2", upload_to="products/colors/", blank=True, null=True)
+    image3 = models.ImageField("Image 3", upload_to="products/colors/", blank=True, null=True)
+    image4 = models.ImageField("Image 4", upload_to="products/colors/", blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.product.name} - {self.color_name}"
+
+    @property
+    def display_image(self):
+        if self.image1:
+            return self.image1.url
+        return None
+
+    @property
+    def all_images(self):
+        imgs = []
+        if self.image1:
+            imgs.append(self.image1.url)
+        if self.image2:
+            imgs.append(self.image2.url)
+        if self.image3:
+            imgs.append(self.image3.url)
+        if self.image4:
+            imgs.append(self.image4.url)
+        return imgs
