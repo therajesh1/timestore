@@ -1,4 +1,7 @@
 from decimal import Decimal
+import csv
+import io
+from django.http import HttpResponse
 
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
@@ -366,3 +369,164 @@ def order_manage_detail(request, pk):
     else:
         form = OrderStatusForm(instance=order)
     return render(request, "store/order_manage_detail.html", {"order": order, "form": form})
+
+
+@staff_member_required
+def download_import_template(request):
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = 'attachment; filename="product_import_template.csv"'
+    
+    writer = csv.writer(response)
+    writer.writerow([
+        "ref", "ean_code", "name", "brand", "sub_brand", "category",
+        "mrp", "price", "stock", "description", "colour", "collection",
+        "movement", "warranty_period", "glass_material", "strap_material",
+        "strap_color", "dial_color", "case_material", "case_size",
+        "gender", "features", "image_url", "gst_percent", "hsn_code", "min_qty"
+    ])
+    writer.writerow([
+        "W-SAMPLE", "", "Edifice Classic", "Casio", "Edifice", "Wrist Watch",
+        "15995", "15995", "10", "A hand-finished chronograph watch.", "Black", "Edifice",
+        "Quartz", "2 Years", "Mineral Glass", "Stainless Steel",
+        "Black", "Black", "Stainless Steel", "43mm",
+        "Men", "Chronograph, Tachymeter", "https://images.unsplash.com/photo-1547996160-81dfa63595aa?w=600", "18", "9101", "1"
+    ])
+    return response
+
+
+@staff_member_required
+def product_bulk_import(request):
+    created_count = 0
+    updated_count = 0
+    errors = []
+    
+    if request.method == "POST":
+        csv_file = request.FILES.get("csv_file")
+        if not csv_file:
+            errors.append("No file was uploaded.")
+        elif not csv_file.name.endswith(".csv"):
+            errors.append("Uploaded file is not a CSV file.")
+        else:
+            try:
+                data_set = csv_file.read().decode("utf-8-sig")
+                io_string = io.StringIO(data_set)
+                reader = csv.DictReader(io_string)
+                
+                if not reader.fieldnames:
+                    errors.append("The CSV file has no headers.")
+                elif "ref" not in reader.fieldnames:
+                    errors.append("The CSV file is missing the required 'ref' column.")
+                else:
+                    for i, row in enumerate(reader, start=2):
+                        ref = row.get("ref", "").strip()
+                        if not ref:
+                            errors.append(f"Row {i}: Missing required 'ref' field.")
+                            continue
+                        
+                        brand_name = row.get("brand", "").strip()
+                        brand_obj = None
+                        if brand_name:
+                            brand_obj, _ = Brand.objects.get_or_create(name=brand_name)
+                            
+                        sub_brand_name = row.get("sub_brand", "").strip()
+                        sub_brand_obj = None
+                        if sub_brand_name and brand_obj:
+                            sub_brand_obj, _ = SubBrand.objects.get_or_create(brand=brand_obj, name=sub_brand_name)
+                        
+                        category = row.get("category", "").strip()
+                        if category not in [choice[0] for choice in Product.Category.choices]:
+                            category = Product.Category.WRIST_WATCH
+                        
+                        try:
+                            mrp = Decimal(row.get("mrp", "0").strip() or "0")
+                        except Exception:
+                            mrp = Decimal("0")
+                            
+                        try:
+                            price = Decimal(row.get("price", "0").strip() or "0")
+                        except Exception:
+                            price = Decimal("0")
+                            
+                        if price == 0 and mrp > 0:
+                            price = mrp
+                            
+                        try:
+                            stock = int(row.get("stock", "5").strip() or "5")
+                        except Exception:
+                            stock = 5
+                            
+                        try:
+                            min_qty = int(row.get("min_qty", "1").strip() or "1")
+                        except Exception:
+                            min_qty = 1
+                            
+                        gst_percent = row.get("gst_percent", "18").strip()
+                        if gst_percent not in [choice[0] for choice in Product.GST.choices]:
+                            gst_percent = Product.GST.EIGHTEEN
+                            
+                        product, created = Product.objects.get_or_create(
+                            ref=ref,
+                            defaults={"category": category}
+                        )
+                        
+                        product.name = row.get("name", "").strip() or f"Product {ref}"
+                        product.category = category
+                        product.ean_code = row.get("ean_code", "").strip()
+                        product.model_number = row.get("model_number", "").strip()
+                        product.tts_model = row.get("tts_model", "").strip()
+                        product.brand = brand_obj
+                        product.sub_brand = sub_brand_obj
+                        product.product_type = row.get("product_type", "").strip()
+                        product.colour = row.get("colour", "").strip()
+                        product.collection = row.get("collection", "").strip()
+                        product.warranty_period = row.get("warranty_period", "").strip()
+                        product.glass_material = row.get("glass_material", "").strip()
+                        product.strap_material = row.get("strap_material", "").strip()
+                        product.movement = row.get("movement", "").strip()
+                        product.strap_color = row.get("strap_color", "").strip()
+                        product.dial_color = row.get("dial_color", "").strip()
+                        product.case_material = row.get("case_material", "").strip()
+                        product.case_size = row.get("case_size", "").strip()
+                        
+                        gender = row.get("gender", "").strip()
+                        if gender in ["Men", "Women", "Unisex"]:
+                            product.gender = gender
+                        else:
+                            product.gender = "Unisex"
+                            
+                        product.features = row.get("features", "").strip()
+                        product.mrp = mrp
+                        product.price = price
+                        product.gst_percent = gst_percent
+                        product.hsn_code = row.get("hsn_code", "").strip() or "9101"
+                        product.min_qty = min_qty
+                        product.description = row.get("description", "").strip()
+                        product.remark = row.get("remark", "").strip()
+                        
+                        image_url = row.get("image_url", "").strip()
+                        if image_url:
+                            product.image_url = image_url
+                            
+                        product.stock = stock
+                        
+                        featured_val = row.get("featured", "").strip().lower()
+                        product.featured = featured_val in ["true", "yes", "1", "t"]
+                        
+                        product.save()
+                        
+                        if created:
+                            created_count += 1
+                        else:
+                            updated_count += 1
+            except Exception as e:
+                errors.append(f"Fatal error parsing CSV: {str(e)}")
+                
+        if not errors:
+            messages.success(request, f"Import complete: {created_count} products added, {updated_count} products updated.")
+            return redirect("product_manage_list")
+            
+    return render(request, "store/product_import.html", {
+        "created_count": created_count,
+        "updated_count": updated_count,
+        "errors": errors,
+    })

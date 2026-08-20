@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Import Products · The Time Store{% endblock %}
+{% block content %}
+<section class="section" style="max-width: 640px;">
+  <p class="eyebrow"><span class="gold-line"></span>Admin</p>
+  <h2 style="font-size: 2.75rem; margin-bottom: 2rem;">Bulk Import <em>Products</em></h2>
+
+  <div class="card-panel" style="margin-bottom: 2rem; background: rgba(212,175,55,0.05); border-color: var(--accent);">
+    <p class="mono" style="font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.5rem;">CSV Template</p>
+    <p style="font-size: 0.9rem; color: var(--muted-foreground); margin-bottom: 1.25rem;">
+      Download our pre-formatted CSV template to make sure all product fields are structured correctly.
+    </p>
+    <a href="{% url 'download_import_template' %}" class="btn btn-accent" style="display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; padding: 0.5rem 1.25rem;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+      Download CSV Template
+    </a>
+  </div>
+
+  <form method="post" enctype="multipart/form-data" class="card-panel" style="margin-bottom: 2rem;">
+    {% csrf_token %}
+    <p class="mono" style="font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 1.25rem;">Upload CSV File</p>
+    
+    <div class="form-field" style="margin-bottom: 1.5rem;">
+      <label for="csv_file" style="margin-bottom: 0.5rem; display: block; font-weight: 500;">Select CSV file</label>
+      <input type="file" name="csv_file" id="csv_file" accept=".csv" required style="display: block; width: 100%; font-size: 0.9rem; padding: 0.5rem; border: 1px dashed var(--border); border-radius: 4px; background: rgba(255,255,255,0.01);" />
+      <p class="helptext" style="margin-top: 0.5rem;">Only .csv files are supported. Existing products with matching Ref codes will be updated (upserted).</p>
+    </div>
+
+    <div style="display: flex; gap: 1rem; align-items: center;">
+      <button type="submit" class="btn btn-accent">Start Import</button>
+      <a href="{% url 'product_manage_list' %}" class="btn btn-outline">Cancel</a>
+    </div>
+  </form>
+
+  {% if errors %}
+    <div class="card-panel" style="border-color: #B3261E; background: rgba(179,38,30,0.05); padding: 1.5rem; margin-top: 2rem;">
+      <p class="mono" style="color: #B3261E; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; margin-bottom: 0.75rem; letter-spacing: 0.1em;">Import Warnings &amp; Errors</p>
+      <ul style="color: #B3261E; font-size: 0.9rem; padding-left: 1.25rem; margin: 0;">
+        {% for error in errors %}
+          <li style="margin-bottom: 0.25rem;">{{ error }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

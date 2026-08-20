@@ -7,7 +7,10 @@
       <p class="eyebrow"><span class="gold-line"></span>Admin</p>
       <h2 style="font-size: 2.75rem;">Manage <em>Products</em></h2>
     </div>
-    <a href="{% url 'product_create' %}" class="btn btn-accent">+ Add Product</a>
+    <div style="display:flex; gap:0.75rem;">
+      <a href="{% url 'product_bulk_import' %}" class="btn btn-outline" style="border-color:var(--accent); color:var(--accent);">Import CSV</a>
+      <a href="{% url 'product_create' %}" class="btn btn-accent">+ Add Product</a>
+    </div>
   </div>
 
   {% include "store/_admin_category_tabs.html" with base_url=request.path %}
