@@ -329,12 +329,27 @@ footer { border-top: 1px solid var(--border); margin-top: 4rem; }
   }
   .nav-icons .nav-icon-btn .cart-badge { position: static; margin-left: auto; }
 
+  .hero {
+    min-height: 48vh;
+  }
+
   .hero h1 {
-    font-size: 2.75rem !important;
+    font-size: 2.5rem !important;
+    line-height: 1.1;
+  }
+
+  .hero-desc {
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+    max-width: 100%;
   }
 
   .hero-content {
-    padding-bottom: 4rem;
+    padding: 3rem 1.25rem 2.5rem 1.25rem;
+  }
+
+  .hero-bg img {
+    object-position: center center;
   }
 
   h2 {
