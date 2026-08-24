@@ -394,136 +394,136 @@ def download_import_template(request):
     return response
  
  
- @staff_member_required
- def product_bulk_import(request):
-     created_count = 0
-     updated_count = 0
-     errors = []
-     
-     if request.method == "POST":
-         csv_file = request.FILES.get("csv_file")
-         if not csv_file:
-             errors.append("No file was uploaded.")
-         elif not csv_file.name.endswith(".csv"):
-             errors.append("Uploaded file is not a CSV file.")
-         else:
-             try:
-                 data_set = csv_file.read().decode("utf-8-sig")
-                 io_string = io.StringIO(data_set)
-                 reader = csv.DictReader(io_string)
-                 
-                 if not reader.fieldnames:
-                     errors.append("The CSV file has no headers.")
-                 else:
-                     for i, row in enumerate(reader, start=2):
-                         ref = (row.get("ref") or "").strip()
-                         if not ref:
-                             ref = _next_product_ref()
-                         
-                         brand_name = (row.get("brand") or "").strip()
-                         brand_obj = None
-                         if brand_name:
-                             brand_obj, _ = Brand.objects.get_or_create(name=brand_name)
-                             
-                         sub_brand_name = (row.get("sub_brand") or "").strip()
-                         sub_brand_obj = None
-                         if sub_brand_name and brand_obj:
-                             sub_brand_obj, _ = SubBrand.objects.get_or_create(brand=brand_obj, name=sub_brand_name)
-                         
-                         category = (row.get("category") or "").strip()
-                         if category not in [choice[0] for choice in Product.Category.choices]:
-                             category = Product.Category.WRIST_WATCH
-                         
-                         try:
-                             mrp = Decimal((row.get("mrp") or "0").strip() or "0")
-                         except Exception:
-                             mrp = Decimal("0")
-                             
-                         try:
-                             price = Decimal((row.get("price") or "0").strip() or "0")
-                         except Exception:
-                             price = Decimal("0")
-                             
-                         if price == 0 and mrp > 0:
-                             price = mrp
-                             
-                         try:
-                             stock = int((row.get("stock") or "5").strip() or "5")
-                         except Exception:
-                             stock = 5
-                             
-                         try:
-                             min_qty = int((row.get("min_qty") or "1").strip() or "1")
-                         except Exception:
-                             min_qty = 1
-                             
-                         gst_percent = (row.get("gst_percent") or "18").strip()
-                         if gst_percent not in [choice[0] for choice in Product.GST.choices]:
-                             gst_percent = Product.GST.EIGHTEEN
-                             
-                         product, created = Product.objects.get_or_create(
-                             ref=ref,
-                             defaults={"category": category}
-                         )
-                         
-                         product.name = (row.get("name") or "").strip() or f"Product {ref}"
-                         product.category = category
-                         product.ean_code = (row.get("ean_code") or "").strip()
-                         product.model_number = (row.get("model_number") or "").strip()
-                         product.tts_model = (row.get("tts_model") or "").strip()
-                         product.brand = brand_obj
-                         product.sub_brand = sub_brand_obj
-                         product.product_type = (row.get("product_type") or "").strip()
-                         product.colour = (row.get("colour") or "").strip()
-                         product.collection = (row.get("collection") or "").strip()
-                         product.warranty_period = (row.get("warranty_period") or "").strip()
-                         product.glass_material = (row.get("glass_material") or "").strip()
-                         product.strap_material = (row.get("strap_material") or "").strip()
-                         product.movement = (row.get("movement") or "").strip()
-                         product.strap_color = (row.get("strap_color") or "").strip()
-                         product.dial_color = (row.get("dial_color") or "").strip()
-                         product.case_material = (row.get("case_material") or "").strip()
-                         product.case_size = (row.get("case_size") or "").strip()
-                         
-                         gender = (row.get("gender") or "").strip()
-                         if gender in ["Men", "Women", "Unisex"]:
-                             product.gender = gender
-                         else:
-                             product.gender = "Unisex"
-                             
-                         product.features = (row.get("features") or "").strip()
-                         product.mrp = mrp
-                         product.price = price
-                         product.gst_percent = gst_percent
-                         product.hsn_code = (row.get("hsn_code") or "").strip() or "9101"
-                         product.min_qty = min_qty
-                         product.description = (row.get("description") or "").strip()
-                         product.remark = (row.get("remark") or "").strip()
-                         
-                         image_url = (row.get("image_url") or "").strip()
-                         if image_url:
-                             product.image_url = image_url
-                             
-                         product.stock = stock
-                         
-                         featured_val = (row.get("featured") or "").strip().lower()
-                         product.featured = featured_val in ["true", "yes", "1", "t"]
-                         
-                         product.save()
-                         
-                         if created:
-                             created_count += 1
-                         else:
-                             updated_count += 1
-             except Exception as e:
-                 errors.append(f"Fatal error parsing CSV: {str(e)}")
-                 
-         if not errors:
-             messages.success(request, f"Import complete: {created_count} products added, {updated_count} products updated.")
-             return redirect("product_manage_list")
-             
-     return render(request, "store/product_import.html", {
-         "created_count": created_count,
-         "updated_count": updated_count,
-         "errors": errors,
-     })
+@staff_member_required
+def product_bulk_import(request):
+    created_count = 0
+    updated_count = 0
+    errors = []
+    
+    if request.method == "POST":
+        csv_file = request.FILES.get("csv_file")
+        if not csv_file:
+            errors.append("No file was uploaded.")
+        elif not csv_file.name.endswith(".csv"):
+            errors.append("Uploaded file is not a CSV file.")
+        else:
+            try:
+                data_set = csv_file.read().decode("utf-8-sig")
+                io_string = io.StringIO(data_set)
+                reader = csv.DictReader(io_string)
+                
+                if not reader.fieldnames:
+                    errors.append("The CSV file has no headers.")
+                else:
+                    for i, row in enumerate(reader, start=2):
+                        ref = (row.get("ref") or "").strip()
+                        if not ref:
+                            ref = _next_product_ref()
+                        
+                        brand_name = (row.get("brand") or "").strip()
+                        brand_obj = None
+                        if brand_name:
+                            brand_obj, _ = Brand.objects.get_or_create(name=brand_name)
+                            
+                        sub_brand_name = (row.get("sub_brand") or "").strip()
+                        sub_brand_obj = None
+                        if sub_brand_name and brand_obj:
+                            sub_brand_obj, _ = SubBrand.objects.get_or_create(brand=brand_obj, name=sub_brand_name)
+                        
+                        category = (row.get("category") or "").strip()
+                        if category not in [choice[0] for choice in Product.Category.choices]:
+                            category = Product.Category.WRIST_WATCH
+                        
+                        try:
+                            mrp = Decimal((row.get("mrp") or "0").strip() or "0")
+                        except Exception:
+                            mrp = Decimal("0")
+                            
+                        try:
+                            price = Decimal((row.get("price") or "0").strip() or "0")
+                        except Exception:
+                            price = Decimal("0")
+                            
+                        if price == 0 and mrp > 0:
+                            price = mrp
+                            
+                        try:
+                            stock = int((row.get("stock") or "5").strip() or "5")
+                        except Exception:
+                            stock = 5
+                            
+                        try:
+                            min_qty = int((row.get("min_qty") or "1").strip() or "1")
+                        except Exception:
+                            min_qty = 1
+                            
+                        gst_percent = (row.get("gst_percent") or "18").strip()
+                        if gst_percent not in [choice[0] for choice in Product.GST.choices]:
+                            gst_percent = Product.GST.EIGHTEEN
+                            
+                        product, created = Product.objects.get_or_create(
+                            ref=ref,
+                            defaults={"category": category}
+                        )
+                        
+                        product.name = (row.get("name") or "").strip() or f"Product {ref}"
+                        product.category = category
+                        product.ean_code = (row.get("ean_code") or "").strip()
+                        product.model_number = (row.get("model_number") or "").strip()
+                        product.tts_model = (row.get("tts_model") or "").strip()
+                        product.brand = brand_obj
+                        product.sub_brand = sub_brand_obj
+                        product.product_type = (row.get("product_type") or "").strip()
+                        product.colour = (row.get("colour") or "").strip()
+                        product.collection = (row.get("collection") or "").strip()
+                        product.warranty_period = (row.get("warranty_period") or "").strip()
+                        product.glass_material = (row.get("glass_material") or "").strip()
+                        product.strap_material = (row.get("strap_material") or "").strip()
+                        product.movement = (row.get("movement") or "").strip()
+                        product.strap_color = (row.get("strap_color") or "").strip()
+                        product.dial_color = (row.get("dial_color") or "").strip()
+                        product.case_material = (row.get("case_material") or "").strip()
+                        product.case_size = (row.get("case_size") or "").strip()
+                        
+                        gender = (row.get("gender") or "").strip()
+                        if gender in ["Men", "Women", "Unisex"]:
+                            product.gender = gender
+                        else:
+                            product.gender = "Unisex"
+                            
+                        product.features = (row.get("features") or "").strip()
+                        product.mrp = mrp
+                        product.price = price
+                        product.gst_percent = gst_percent
+                        product.hsn_code = (row.get("hsn_code") or "").strip() or "9101"
+                        product.min_qty = min_qty
+                        product.description = (row.get("description") or "").strip()
+                        product.remark = (row.get("remark") or "").strip()
+                        
+                        image_url = (row.get("image_url") or "").strip()
+                        if image_url:
+                            product.image_url = image_url
+                            
+                        product.stock = stock
+                        
+                        featured_val = (row.get("featured") or "").strip().lower()
+                        product.featured = featured_val in ["true", "yes", "1", "t"]
+                        
+                        product.save()
+                        
+                        if created:
+                            created_count += 1
+                        else:
+                            updated_count += 1
+            except Exception as e:
+                errors.append(f"Fatal error parsing CSV: {str(e)}")
+                
+        if not errors:
+            messages.success(request, f"Import complete: {created_count} products added, {updated_count} products updated.")
+            return redirect("product_manage_list")
+            
+    return render(request, "store/product_import.html", {
+        "created_count": created_count,
+        "updated_count": updated_count,
+        "errors": errors,
+    })
