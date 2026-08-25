@@ -70,8 +70,37 @@ def product_list(request):
 
 
 def product_detail(request, pk):
+    from difflib import SequenceMatcher
     product = get_object_or_404(Product, pk=pk)
-    related = Product.objects.filter(category=product.category).exclude(pk=product.pk)[:4]
+    
+    # Get all other products
+    candidates = list(Product.objects.exclude(pk=product.pk))
+    ref_model = (product.model_number or "").strip().lower()
+    
+    scored_candidates = []
+    for cand in candidates:
+        cand_model = (cand.model_number or "").strip().lower()
+        
+        # Calculate model number similarity ratio
+        if ref_model and cand_model:
+            model_sim = SequenceMatcher(None, ref_model, cand_model).ratio()
+        else:
+            model_sim = 0.0
+            
+        # Category bonus (relevance)
+        cat_bonus = 0.5 if cand.category == product.category else 0.0
+        
+        # Brand bonus (relevance)
+        brand_bonus = 0.3 if cand.brand_id and cand.brand_id == product.brand_id else 0.0
+        
+        # Prioritize model similarity strongly, then category/brand
+        score = model_sim * 2.0 + cat_bonus + brand_bonus
+        scored_candidates.append((score, cand))
+        
+    # Sort by score descending and get top 4
+    scored_candidates.sort(key=lambda x: x[0], reverse=True)
+    related = [item[1] for item in scored_candidates[:4]]
+    
     return render(request, "store/product_detail.html", {"product": product, "related": related})
 
 
