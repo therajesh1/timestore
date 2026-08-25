@@ -1,6 +1,8 @@
 from decimal import Decimal
 import csv
 import io
+import requests
+from django.core.files.base import ContentFile
 from django.http import HttpResponse
 
 from django.contrib import messages
@@ -400,6 +402,22 @@ def order_manage_detail(request, pk):
     return render(request, "store/order_manage_detail.html", {"order": order, "form": form})
 
 
+def _upload_image_from_url(url, field):
+    if not url or not url.startswith(("http://", "https://")):
+        return False
+    try:
+        response = requests.get(url, timeout=5)
+        if response.status_code == 200:
+            name = url.split("/")[-1].split("?")[0]
+            if not name or "." not in name:
+                name = "imported_image.jpg"
+            field.save(name, ContentFile(response.content), save=False)
+            return True
+    except Exception:
+        pass
+    return False
+
+
 @staff_member_required
 def download_import_template(request):
     response = HttpResponse(content_type="text/csv")
@@ -411,14 +429,14 @@ def download_import_template(request):
         "mrp", "price", "stock", "description", "colour", "collection",
         "movement", "warranty_period", "glass_material", "strap_material",
         "strap_color", "dial_color", "case_material", "case_size",
-        "gender", "features", "image_url", "gst_percent", "hsn_code", "min_qty"
+        "gender", "features", "image_url", "image_url2", "image_url3", "image_url4", "gst_percent", "hsn_code", "min_qty"
     ])
     writer.writerow([
         "", "Casio", "Edifice", "Wrist Watch",
         "15995", "15995", "10", "A hand-finished chronograph watch.", "Black", "Edifice",
         "Quartz", "2 Years", "Mineral Glass", "Stainless Steel",
         "Black", "Black", "Stainless Steel", "43mm",
-        "Men", "Chronograph, Tachymeter", "https://images.unsplash.com/photo-1547996160-81dfa63595aa?w=600", "18", "9101", "1"
+        "Men", "Chronograph, Tachymeter", "https://images.unsplash.com/photo-1547996160-81dfa63595aa?w=600", "", "", "", "18", "9101", "1"
     ])
     return response
  
@@ -532,6 +550,19 @@ def product_bulk_import(request):
                         image_url = (row.get("image_url") or "").strip()
                         if image_url:
                             product.image_url = image_url
+                            _upload_image_from_url(image_url, product.image)
+                            
+                        image_url2 = (row.get("image_url2") or "").strip()
+                        if image_url2:
+                            _upload_image_from_url(image_url2, product.image2)
+                            
+                        image_url3 = (row.get("image_url3") or "").strip()
+                        if image_url3:
+                            _upload_image_from_url(image_url3, product.image3)
+                            
+                        image_url4 = (row.get("image_url4") or "").strip()
+                        if image_url4:
+                            _upload_image_from_url(image_url4, product.image4)
                             
                         product.stock = stock
                         
