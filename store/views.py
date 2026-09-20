@@ -590,6 +590,7 @@ def product_bulk_import(request):
     updated_count = 0
     errors = []
     warnings = []
+    products_to_sync = []
     
     if request.method == "POST":
         csv_file = request.FILES.get("csv_file")
@@ -599,14 +600,21 @@ def product_bulk_import(request):
             errors.append("Uploaded file is not a CSV file.")
         else:
             try:
-                data_set = csv_file.read().decode("utf-8-sig")
+                raw_bytes = csv_file.read()
+                try:
+                    data_set = raw_bytes.decode("utf-8-sig")
+                except UnicodeDecodeError:
+                    data_set = raw_bytes.decode("latin-1")
                 io_string = io.StringIO(data_set)
                 reader = csv.DictReader(io_string)
                 
                 if not reader.fieldnames:
                     errors.append("The CSV file has no headers.")
-                else:
-                    for i, row in enumerate(reader, start=2):
+                brands_cache = {}
+                sub_brands_cache = {}
+
+                for i, row in enumerate(reader, start=2):
+                    try:
                         ref = (row.get("ref") or "").strip()
                         if not ref:
                             ref = _next_product_ref()
@@ -614,12 +622,18 @@ def product_bulk_import(request):
                         brand_name = (row.get("brand") or "").strip()
                         brand_obj = None
                         if brand_name:
-                            brand_obj, _ = Brand.objects.get_or_create(name=brand_name[:60])
+                            b_key = brand_name[:60]
+                            if b_key not in brands_cache:
+                                brands_cache[b_key], _ = Brand.objects.get_or_create(name=b_key)
+                            brand_obj = brands_cache[b_key]
                             
                         sub_brand_name = (row.get("sub_brand") or "").strip()
                         sub_brand_obj = None
                         if sub_brand_name and brand_obj:
-                            sub_brand_obj, _ = SubBrand.objects.get_or_create(brand=brand_obj, name=sub_brand_name[:60])
+                            sb_key = (brand_obj.pk, sub_brand_name[:60])
+                            if sb_key not in sub_brands_cache:
+                                sub_brands_cache[sb_key], _ = SubBrand.objects.get_or_create(brand=brand_obj, name=sub_brand_name[:60])
+                            sub_brand_obj = sub_brands_cache[sb_key]
                         
                         category_raw = (row.get("category") or "").strip().lower()
                         category = Product.Category.WRIST_WATCH
@@ -740,10 +754,12 @@ def product_bulk_import(request):
                             created_count += 1
                         else:
                             updated_count += 1
+                    except Exception as row_err:
+                        errors.append(f"Row {i} (ref: {row.get('ref', '')}): {str(row_err)}")
             except Exception as e:
                 errors.append(f"Fatal error parsing CSV: {str(e)}")
                 
-        if not errors:
+        if created_count > 0 or updated_count > 0:
             if products_to_sync:
                 threading.Thread(
                     target=_background_cache_images,
@@ -752,7 +768,9 @@ def product_bulk_import(request):
                 ).start()
                 
             msg = f"Import complete: {created_count} products added, {updated_count} products updated."
-            if warnings:
+            if errors:
+                messages.warning(request, f"{msg} (Note: {len(errors)} row error(s) flagged below).")
+            elif warnings:
                 messages.warning(request, f"{msg} (Note: {len(warnings)} image quality warning(s) flagged below).")
             else:
                 messages.success(request, msg)
