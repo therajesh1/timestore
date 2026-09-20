@@ -2,6 +2,7 @@ from decimal import Decimal
 import csv
 import io
 import re
+import threading
 import requests
 from PIL import Image
 from django.core.files.base import ContentFile
@@ -521,6 +522,45 @@ def _upload_image_from_url(url, field, product_name="", row_num=None):
         return False, " | ".join(warnings)
 
 
+def _background_cache_images(products_to_sync):
+    """
+    Downloads images and attaches them to Cloudinary storage in a background thread,
+    preventing HTTP gateway and Gunicorn worker timeouts.
+    """
+    from django.db import close_old_connections
+    close_old_connections()
+    
+    for pk, img1, img2, img3, img4 in products_to_sync:
+        try:
+            close_old_connections()
+            p = Product.objects.filter(pk=pk).first()
+            if not p:
+                continue
+            changed = False
+            if img1 and not p.image:
+                ok, _ = _upload_image_from_url(img1, p.image, p.name)
+                if ok:
+                    changed = True
+            if img2 and not p.image2:
+                ok, _ = _upload_image_from_url(img2, p.image2, p.name)
+                if ok:
+                    changed = True
+            if img3 and not p.image3:
+                ok, _ = _upload_image_from_url(img3, p.image3, p.name)
+                if ok:
+                    changed = True
+            if img4 and not p.image4:
+                ok, _ = _upload_image_from_url(img4, p.image4, p.name)
+                if ok:
+                    changed = True
+            if changed:
+                p.save(update_fields=["image", "image2", "image3", "image4"])
+        except Exception:
+            pass
+        finally:
+            close_old_connections()
+
+
 @staff_member_required
 def download_import_template(request):
     response = HttpResponse(content_type="text/csv")
@@ -662,27 +702,23 @@ def product_bulk_import(request):
                         image_url = (row.get("image_url") or "").strip()
                         if image_url:
                             product.image_url = upgrade_image_url(image_url)
-                            ok, warn = _upload_image_from_url(image_url, product.image, product_name=product.name, row_num=i)
-                            if warn:
-                                warnings.append(warn)
+                            if "encrypted-tbn0.gstatic.com" in image_url:
+                                warnings.append(
+                                    f"Row {i} ({product.name}): Google thumbnail preview URL detected. "
+                                    f"Google thumbnails are low resolution (~300px). For best quality, use direct retailer or brand product image URLs."
+                                )
                             
                         image_url2 = (row.get("image_url2") or "").strip()
                         if image_url2:
-                            ok, warn = _upload_image_from_url(image_url2, product.image2, product_name=product.name, row_num=i)
-                            if warn:
-                                warnings.append(warn)
+                            product.image_url2 = upgrade_image_url(image_url2)
                             
                         image_url3 = (row.get("image_url3") or "").strip()
                         if image_url3:
-                            ok, warn = _upload_image_from_url(image_url3, product.image3, product_name=product.name, row_num=i)
-                            if warn:
-                                warnings.append(warn)
+                            product.image_url3 = upgrade_image_url(image_url3)
                             
                         image_url4 = (row.get("image_url4") or "").strip()
                         if image_url4:
-                            ok, warn = _upload_image_from_url(image_url4, product.image4, product_name=product.name, row_num=i)
-                            if warn:
-                                warnings.append(warn)
+                            product.image_url4 = upgrade_image_url(image_url4)
                             
                         product.stock = stock
                         
@@ -690,6 +726,15 @@ def product_bulk_import(request):
                         product.featured = featured_val in ["true", "yes", "1", "t"]
                         
                         product.save()
+                        
+                        if image_url or image_url2 or image_url3 or image_url4:
+                            products_to_sync.append((
+                                product.pk,
+                                product.image_url,
+                                product.image_url2,
+                                product.image_url3,
+                                product.image_url4,
+                            ))
                         
                         if created:
                             created_count += 1
@@ -699,6 +744,13 @@ def product_bulk_import(request):
                 errors.append(f"Fatal error parsing CSV: {str(e)}")
                 
         if not errors:
+            if products_to_sync:
+                threading.Thread(
+                    target=_background_cache_images,
+                    args=(products_to_sync,),
+                    daemon=True
+                ).start()
+                
             msg = f"Import complete: {created_count} products added, {updated_count} products updated."
             if warnings:
                 messages.warning(request, f"{msg} (Note: {len(warnings)} image quality warning(s) flagged below).")

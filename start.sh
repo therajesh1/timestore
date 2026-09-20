@@ -10,4 +10,4 @@ python manage.py seed_brands
 python manage.py seed_products
 
 # Start server
-gunicorn config.wsgi
+gunicorn config.wsgi --timeout 120 --workers 2

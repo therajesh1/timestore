@@ -158,8 +158,11 @@ class Product(models.Model):
     image = models.ImageField("Picture", upload_to="products/", blank=True, null=True)
     image_url = models.URLField("Picture URL (fallback)", max_length=1000, blank=True)
     image2 = models.ImageField("Picture 2", upload_to="products/", blank=True, null=True)
+    image_url2 = models.URLField("Picture 2 URL (fallback)", max_length=1000, blank=True)
     image3 = models.ImageField("Picture 3", upload_to="products/", blank=True, null=True)
+    image_url3 = models.URLField("Picture 3 URL (fallback)", max_length=1000, blank=True)
     image4 = models.ImageField("Picture 4", upload_to="products/", blank=True, null=True)
+    image_url4 = models.URLField("Picture 4 URL (fallback)", max_length=1000, blank=True)
     stock = models.PositiveIntegerField(default=5)
     featured = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -210,12 +213,22 @@ class Product(models.Model):
             imgs.append(optimize_image_url(self.image.url))
         elif self.image_url:
             imgs.append(optimize_image_url(self.image_url))
+
         if self.image2:
             imgs.append(optimize_image_url(self.image2.url))
+        elif self.image_url2:
+            imgs.append(optimize_image_url(self.image_url2))
+
         if self.image3:
             imgs.append(optimize_image_url(self.image3.url))
+        elif self.image_url3:
+            imgs.append(optimize_image_url(self.image_url3))
+
         if self.image4:
             imgs.append(optimize_image_url(self.image4.url))
+        elif self.image_url4:
+            imgs.append(optimize_image_url(self.image_url4))
+
         return imgs
 
 
