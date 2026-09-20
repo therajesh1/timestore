@@ -117,17 +117,17 @@ class Product(models.Model):
         TWENTYEIGHT = "28", "28%"
 
     # Product Master
-    ean_code = models.CharField("EAN code", max_length=13, blank=True, default="")
-    name = models.CharField("Product name", max_length=120)
-    ref = models.CharField("Product ID / ref. code", max_length=20, unique=True)
-    model_number = models.CharField("Model", max_length=50, blank=True, default="")
-    tts_model = models.CharField("TTS model", max_length=50, blank=True, default="")
+    ean_code = models.CharField("EAN code", max_length=50, blank=True, default="")
+    name = models.CharField("Product name", max_length=255)
+    ref = models.CharField("Product ID / ref. code", max_length=50, unique=True)
+    model_number = models.CharField("Model", max_length=100, blank=True, default="")
+    tts_model = models.CharField("TTS model", max_length=100, blank=True, default="")
     brand = models.ForeignKey(Brand, on_delete=models.SET_NULL, null=True, blank=True, related_name="products")
     sub_brand = models.ForeignKey(SubBrand, on_delete=models.SET_NULL, null=True, blank=True, related_name="products")
-    category = models.CharField("Category", max_length=30, choices=Category.choices)
-    product_type = models.CharField("Type", max_length=50, blank=True, default="")
-    colour = models.CharField(max_length=30, blank=True, default="")
-    collection = models.CharField(max_length=50, blank=True, default="")
+    category = models.CharField("Category", max_length=50, choices=Category.choices)
+    product_type = models.CharField("Type", max_length=100, blank=True, default="")
+    colour = models.CharField(max_length=120, blank=True, default="")
+    collection = models.CharField(max_length=100, blank=True, default="")
 
     # Specifications
     warranty_period = models.CharField("Warranty Period", max_length=120, blank=True, default="")
@@ -137,7 +137,7 @@ class Product(models.Model):
     strap_color = models.CharField("Strap Color", max_length=120, blank=True, default="")
     dial_color = models.CharField("Dial Color", max_length=120, blank=True, default="")
     case_material = models.CharField("Case Material", max_length=120, blank=True, default="")
-    case_size = models.CharField("Case Size", max_length=80, blank=True, default="")
+    case_size = models.CharField("Case Size", max_length=160, blank=True, default="")
     gender = models.CharField(
         "Gender",
         max_length=20,
@@ -150,13 +150,13 @@ class Product(models.Model):
     mrp = models.DecimalField("MRP", max_digits=12, decimal_places=2, default=0, help_text="Maximum retail price, in INR")
     price = models.DecimalField("Selling price", max_digits=12, decimal_places=2, help_text="Price in INR")
     gst_percent = models.CharField("GST %", max_length=3, choices=GST.choices, default=GST.EIGHTEEN)
-    hsn_code = models.CharField("HSN", max_length=10, blank=True, default="9101")
+    hsn_code = models.CharField("HSN", max_length=20, blank=True, default="9101")
     min_qty = models.PositiveIntegerField("Min qty", default=1)
 
     description = models.TextField(blank=True, default="")
     remark = models.TextField(blank=True, default="")
     image = models.ImageField("Picture", upload_to="products/", blank=True, null=True)
-    image_url = models.URLField("Picture URL (fallback)", max_length=500, blank=True)
+    image_url = models.URLField("Picture URL (fallback)", max_length=1000, blank=True)
     image2 = models.ImageField("Picture 2", upload_to="products/", blank=True, null=True)
     image3 = models.ImageField("Picture 3", upload_to="products/", blank=True, null=True)
     image4 = models.ImageField("Picture 4", upload_to="products/", blank=True, null=True)
@@ -185,7 +185,7 @@ class Product(models.Model):
             if self.colour:
                 parts.append(self.colour)
             if parts:
-                self.name = " ".join(parts)
+                self.name = " ".join(parts)[:255]
         super().save(*args, **kwargs)
 
     def get_absolute_url(self):

@@ -444,6 +444,11 @@ def upgrade_image_url(url):
     if "myntassets.com" in u:
         u = re.sub(r"w_\d+", "w_1440", u)
         return u
+
+    # 6. Nykaa CDN: upgrade thumbnail to 1200px
+    if "nykaa.com" in u:
+        u = re.sub(r"tr=w-\d+", "tr=w-1200", u)
+        return u
         
     return u
 
@@ -455,7 +460,7 @@ def _download_image_content(url):
     }
     upgraded = upgrade_image_url(url)
     try:
-        resp = requests.get(upgraded, headers=headers, timeout=10)
+        resp = requests.get(upgraded, headers=headers, timeout=18)
         if resp.status_code == 200 and len(resp.content) > 1000:
             return resp.content, upgraded
     except Exception:
@@ -464,7 +469,7 @@ def _download_image_content(url):
     # Fallback to original URL if upgraded URL failed
     if upgraded != url:
         try:
-            resp = requests.get(url, headers=headers, timeout=10)
+            resp = requests.get(url, headers=headers, timeout=18)
             if resp.status_code == 200 and len(resp.content) > 1000:
                 return resp.content, url
         except Exception:
@@ -569,16 +574,19 @@ def product_bulk_import(request):
                         brand_name = (row.get("brand") or "").strip()
                         brand_obj = None
                         if brand_name:
-                            brand_obj, _ = Brand.objects.get_or_create(name=brand_name)
+                            brand_obj, _ = Brand.objects.get_or_create(name=brand_name[:60])
                             
                         sub_brand_name = (row.get("sub_brand") or "").strip()
                         sub_brand_obj = None
                         if sub_brand_name and brand_obj:
-                            sub_brand_obj, _ = SubBrand.objects.get_or_create(brand=brand_obj, name=sub_brand_name)
+                            sub_brand_obj, _ = SubBrand.objects.get_or_create(brand=brand_obj, name=sub_brand_name[:60])
                         
-                        category = (row.get("category") or "").strip()
-                        if category not in [choice[0] for choice in Product.Category.choices]:
-                            category = Product.Category.WRIST_WATCH
+                        category_raw = (row.get("category") or "").strip().lower()
+                        category = Product.Category.WRIST_WATCH
+                        for choice_val, choice_label in Product.Category.choices:
+                            if category_raw == choice_val.lower():
+                                category = choice_val
+                                break
                         
                         try:
                             mrp = Decimal((row.get("mrp") or "0").strip() or "0")
@@ -608,32 +616,37 @@ def product_bulk_import(request):
                             gst_percent = Product.GST.EIGHTEEN
                             
                         product, created = Product.objects.get_or_create(
-                            ref=ref,
+                            ref=ref[:50],
                             defaults={"category": category}
                         )
                         
-                        product.name = (row.get("name") or "").strip() or f"Product {ref}"
+                        model_val = (row.get("model_number") or row.get("Model") or row.get("model") or "").strip()[:100]
+                        colour_val = (row.get("colour") or row.get("color") or row.get("Colour") or row.get("Color") or "").strip()[:120]
+                        
+                        product.name = (row.get("name") or "").strip()[:255] or f"Product {ref}"
                         product.category = category
-                        product.ean_code = (row.get("ean_code") or "").strip()
-                        product.model_number = (row.get("model_number") or "").strip()
-                        product.tts_model = (row.get("tts_model") or "").strip()
+                        product.ean_code = (row.get("ean_code") or "").strip()[:50]
+                        product.model_number = model_val
+                        product.tts_model = (row.get("tts_model") or "").strip()[:100]
                         product.brand = brand_obj
                         product.sub_brand = sub_brand_obj
-                        product.product_type = (row.get("product_type") or "").strip()
-                        product.colour = (row.get("colour") or "").strip()
-                        product.collection = (row.get("collection") or "").strip()
-                        product.warranty_period = (row.get("warranty_period") or "").strip()
-                        product.glass_material = (row.get("glass_material") or "").strip()
-                        product.strap_material = (row.get("strap_material") or "").strip()
-                        product.movement = (row.get("movement") or "").strip()
-                        product.strap_color = (row.get("strap_color") or "").strip()
-                        product.dial_color = (row.get("dial_color") or "").strip()
-                        product.case_material = (row.get("case_material") or "").strip()
-                        product.case_size = (row.get("case_size") or "").strip()
+                        product.product_type = (row.get("product_type") or "").strip()[:100]
+                        product.colour = colour_val
+                        product.collection = (row.get("collection") or "").strip()[:100]
+                        product.warranty_period = (row.get("warranty_period") or "").strip()[:120]
+                        product.glass_material = (row.get("glass_material") or "").strip()[:120]
+                        product.strap_material = (row.get("strap_material") or "").strip()[:120]
+                        product.movement = (row.get("movement") or "").strip()[:120]
+                        product.strap_color = (row.get("strap_color") or "").strip()[:120]
+                        product.dial_color = (row.get("dial_color") or "").strip()[:120]
+                        product.case_material = (row.get("case_material") or "").strip()[:120]
+                        product.case_size = (row.get("case_size") or "").strip()[:160]
                         
-                        gender = (row.get("gender") or "").strip()
-                        if gender in ["Men", "Women", "Unisex"]:
-                            product.gender = gender
+                        gender_val = (row.get("gender") or row.get("Gender") or "").strip().lower()
+                        if gender_val in ["men", "man", "male"]:
+                            product.gender = "Men"
+                        elif gender_val in ["women", "woman", "female", "ladies"]:
+                            product.gender = "Women"
                         else:
                             product.gender = "Unisex"
                             
