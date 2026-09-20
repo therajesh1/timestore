@@ -90,7 +90,11 @@ PGHOST = os.environ.get("PGHOST")
 
 if DATABASE_URL:
     DATABASES = {
-        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
+        'default': dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=int(os.environ.get("CONN_MAX_AGE", 0)),
+            ssl_require=True
+        )
     }
     # Ensure SSL is enabled for PostgreSQL
     if DATABASES['default'].get('ENGINE') == 'django.db.backends.postgresql':
@@ -104,7 +108,7 @@ elif PGHOST:
             'PASSWORD': os.environ.get("PGPASSWORD"),
             'HOST': PGHOST,
             'PORT': os.environ.get("PGPORT", "5432"),
-            'CONN_MAX_AGE': 600,
+            'CONN_MAX_AGE': int(os.environ.get("CONN_MAX_AGE", 0)),
             'OPTIONS': {
                 'sslmode': 'require',
             }

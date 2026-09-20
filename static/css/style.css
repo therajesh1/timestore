@@ -187,7 +187,7 @@ a { color: inherit; text-decoration: none; }
 }
 .product-card { background: var(--card); display: flex; flex-direction: column; }
 .product-card .thumb { position: relative; aspect-ratio: 4/5; background: #EDE9E1; overflow: hidden; }
-.product-card .thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }
+.product-card .thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; image-rendering: -webkit-optimize-contrast; }
 .product-card:hover .thumb img { transform: scale(1.05); }
 .product-card .ref { position: absolute; top: 1rem; right: 1rem; font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase; background: rgba(247,244,239,0.85); color: var(--muted-foreground); padding: 4px 8px; }
 .product-card .info { padding: 1.5rem; border-top: 1px solid var(--border); }
@@ -463,6 +463,7 @@ footer { border-top: 1px solid var(--border); margin-top: 4rem; }
   height: 100%;
   object-fit: cover;
   transition: opacity 0.2s ease;
+  image-rendering: -webkit-optimize-contrast;
 }
 .gallery-thumbnails {
   display: flex;

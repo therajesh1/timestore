@@ -1,7 +1,40 @@
+import re
+
 from django.conf import settings
 from django.db import models
 from django.urls import reverse
 from django.utils.text import slugify
+
+
+def optimize_image_url(url, transform="f_auto,q_auto:good,e_sharpen:50"):
+    """
+    Transforms image URLs for maximum visual fidelity and fast delivery:
+    1. Cloudinary: Injects f_auto,q_auto:good,e_sharpen:50 for automatic modern format (AVIF/WebP),
+       perceptually lossless compression, and micro-contrast sharpening for dials & metal.
+    2. Unsplash / External fallback: Ensures high resolution parameters if fallback URLs are used.
+    """
+    if not url:
+        return url
+    
+    url_str = str(url)
+    
+    # 1. Cloudinary URL optimization
+    if "res.cloudinary.com" in url_str and "/image/upload/" in url_str:
+        if transform in url_str:
+            return url_str
+        return url_str.replace("/image/upload/", f"/image/upload/{transform}/")
+        
+    # 2. Unsplash high-res optimization fallback
+    if "images.unsplash.com" in url_str:
+        if "w=" in url_str:
+            url_str = re.sub(r"w=\d+", "w=1400", url_str)
+        if "auto=format" not in url_str:
+            url_str += "&auto=format"
+        if "q=" not in url_str:
+            url_str += "&q=85"
+            
+    return url_str
+
 
 
 class Brand(models.Model):
@@ -29,7 +62,7 @@ class Brand(models.Model):
     @property
     def display_logo(self):
         if self.logo:
-            return self.logo.url
+            return optimize_image_url(self.logo.url, transform="f_auto,q_auto:good")
         return None
 
     banner = models.ImageField(upload_to="brands/banners/", blank=True, null=True)
@@ -38,13 +71,13 @@ class Brand(models.Model):
     @property
     def display_banner(self):
         if self.banner:
-            return self.banner.url
+            return optimize_image_url(self.banner.url, transform="f_auto,q_auto:good")
         return None
 
     @property
     def display_banner_mobile(self):
         if self.banner_mobile:
-            return self.banner_mobile.url
+            return optimize_image_url(self.banner_mobile.url, transform="f_auto,q_auto:good")
         return None
 
 
@@ -63,7 +96,7 @@ class SubBrand(models.Model):
     @property
     def display_logo(self):
         if self.logo:
-            return self.logo.url
+            return optimize_image_url(self.logo.url, transform="f_auto,q_auto:good")
         return None
 
 
@@ -167,22 +200,22 @@ class Product(models.Model):
     @property
     def display_image(self):
         if self.image:
-            return self.image.url
-        return self.image_url
+            return optimize_image_url(self.image.url)
+        return optimize_image_url(self.image_url)
 
     @property
     def all_images(self):
         imgs = []
         if self.image:
-            imgs.append(self.image.url)
+            imgs.append(optimize_image_url(self.image.url))
         elif self.image_url:
-            imgs.append(self.image_url)
+            imgs.append(optimize_image_url(self.image_url))
         if self.image2:
-            imgs.append(self.image2.url)
+            imgs.append(optimize_image_url(self.image2.url))
         if self.image3:
-            imgs.append(self.image3.url)
+            imgs.append(optimize_image_url(self.image3.url))
         if self.image4:
-            imgs.append(self.image4.url)
+            imgs.append(optimize_image_url(self.image4.url))
         return imgs
 
 
@@ -246,18 +279,18 @@ class ProductColor(models.Model):
     @property
     def display_image(self):
         if self.image1:
-            return self.image1.url
+            return optimize_image_url(self.image1.url)
         return None
 
     @property
     def all_images(self):
         imgs = []
         if self.image1:
-            imgs.append(self.image1.url)
+            imgs.append(optimize_image_url(self.image1.url))
         if self.image2:
-            imgs.append(self.image2.url)
+            imgs.append(optimize_image_url(self.image2.url))
         if self.image3:
-            imgs.append(self.image3.url)
+            imgs.append(optimize_image_url(self.image3.url))
         if self.image4:
-            imgs.append(self.image4.url)
+            imgs.append(optimize_image_url(self.image4.url))
         return imgs

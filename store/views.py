@@ -1,7 +1,9 @@
 from decimal import Decimal
 import csv
 import io
+import re
 import requests
+from PIL import Image
 from django.core.files.base import ContentFile
 from django.http import HttpResponse
 
@@ -402,20 +404,116 @@ def order_manage_detail(request, pk):
     return render(request, "store/order_manage_detail.html", {"order": order, "form": form})
 
 
-def _upload_image_from_url(url, field):
-    if not url or not url.startswith(("http://", "https://")):
-        return False
+def upgrade_image_url(url):
+    """
+    Upgrades known retailer, marketplace, and stock image URLs to high-resolution master versions.
+    """
+    if not url:
+        return url
+    u = url.strip()
+    
+    # 1. Unsplash: request 1800px width with 90% quality & WebP/AVIF auto-formatting
+    if "images.unsplash.com" in u:
+        if "w=" in u:
+            u = re.sub(r"w=\d+", "w=1800", u)
+        else:
+            u += ("&" if "?" in u else "?") + "w=1800"
+        if "auto=format" not in u:
+            u += "&auto=format"
+        if "q=" not in u:
+            u += "&q=90"
+        return u
+        
+    # 2. SwissTimeHouse / PrestaShop: upgrade thumbnails to thickbox_default (high-res master)
+    if any(k in u for k in ["medium_default", "home_default", "small_default"]):
+        for k in ["medium_default", "home_default", "small_default"]:
+            u = u.replace(k, "thickbox_default")
+        return u
+        
+    # 3. Amazon: strip dynamic resize downsampling tokens (e.g. ._AC_UL320_.) to fetch original master
+    if "media-amazon.com" in u or "images-amazon.com" in u:
+        u = re.sub(r"\._[A-Z0-9_,]+_\.", "._UL1500_.", u)
+        return u
+        
+    # 4. Flipkart: upgrade thumbnail dimensions to 1600x1600
+    if "flixcart.com" in u:
+        u = re.sub(r"/image/\d+/\d+/", "/image/1600/1600/", u)
+        return u
+        
+    # 5. Myntra: request 1440px wide master
+    if "myntassets.com" in u:
+        u = re.sub(r"w_\d+", "w_1440", u)
+        return u
+        
+    return u
+
+
+def _download_image_content(url):
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+    }
+    upgraded = upgrade_image_url(url)
     try:
-        response = requests.get(url, timeout=5)
-        if response.status_code == 200:
-            name = url.split("/")[-1].split("?")[0]
-            if not name or "." not in name:
-                name = "imported_image.jpg"
-            field.save(name, ContentFile(response.content), save=False)
-            return True
+        resp = requests.get(upgraded, headers=headers, timeout=10)
+        if resp.status_code == 200 and len(resp.content) > 1000:
+            return resp.content, upgraded
     except Exception:
         pass
-    return False
+        
+    # Fallback to original URL if upgraded URL failed
+    if upgraded != url:
+        try:
+            resp = requests.get(url, headers=headers, timeout=10)
+            if resp.status_code == 200 and len(resp.content) > 1000:
+                return resp.content, url
+        except Exception:
+            pass
+            
+    return None, None
+
+
+def _upload_image_from_url(url, field, product_name="", row_num=None):
+    if not url or not url.startswith(("http://", "https://")):
+        return False, None
+
+    warnings = []
+    if "encrypted-tbn0.gstatic.com" in url:
+        warnings.append(
+            f"Row {row_num or '?'}: Google search preview thumbnail URL detected for '{product_name}'. "
+            f"Google thumbnails are low resolution (~300px). For best quality, use direct retailer or brand product image URLs."
+        )
+
+    content, final_url = _download_image_content(url)
+    if not content:
+        fail_msg = f"Row {row_num or '?'}: Failed to download image for '{product_name}' from {url[:60]}..."
+        warnings.append(fail_msg)
+        return False, " | ".join(warnings)
+
+    # Check image resolution with Pillow
+    try:
+        img = Image.open(io.BytesIO(content))
+        w, h = img.size
+        if w < 500 or h < 500:
+            warnings.append(
+                f"Row {row_num or '?'}: Low image resolution for '{product_name}' ({w}×{h}px). "
+                f"Recommended minimum for luxury watches is at least 1000×1000px."
+            )
+    except Exception:
+        pass
+
+    try:
+        name = final_url.split("/")[-1].split("?")[0]
+        if not name or "." not in name:
+            name = "watch_image.jpg"
+        name = "".join(c for c in name if c.isalnum() or c in ".-_")
+        if not name.lower().endswith((".jpg", ".jpeg", ".png", ".webp")):
+            name += ".jpg"
+        field.save(name, ContentFile(content), save=False)
+        return True, " | ".join(warnings) if warnings else None
+    except Exception as e:
+        warnings.append(f"Row {row_num or '?'}: Error saving image: {str(e)}")
+        return False, " | ".join(warnings)
 
 
 @staff_member_required
@@ -436,7 +534,7 @@ def download_import_template(request):
         "15995", "15995", "10", "A hand-finished chronograph watch.", "Black", "Edifice",
         "Quartz", "2 Years", "Mineral Glass", "Stainless Steel",
         "Black", "Black", "Stainless Steel", "43mm",
-        "Men", "Chronograph, Tachymeter", "https://images.unsplash.com/photo-1547996160-81dfa63595aa?w=600", "", "", "", "18", "9101", "1"
+        "Men", "Chronograph, Tachymeter", "https://images.unsplash.com/photo-1547996160-81dfa63595aa?w=1600&q=85&auto=format", "", "", "", "18", "9101", "1"
     ])
     return response
  
@@ -446,6 +544,7 @@ def product_bulk_import(request):
     created_count = 0
     updated_count = 0
     errors = []
+    warnings = []
     
     if request.method == "POST":
         csv_file = request.FILES.get("csv_file")
@@ -549,20 +648,28 @@ def product_bulk_import(request):
                         
                         image_url = (row.get("image_url") or "").strip()
                         if image_url:
-                            product.image_url = image_url
-                            _upload_image_from_url(image_url, product.image)
+                            product.image_url = upgrade_image_url(image_url)
+                            ok, warn = _upload_image_from_url(image_url, product.image, product_name=product.name, row_num=i)
+                            if warn:
+                                warnings.append(warn)
                             
                         image_url2 = (row.get("image_url2") or "").strip()
                         if image_url2:
-                            _upload_image_from_url(image_url2, product.image2)
+                            ok, warn = _upload_image_from_url(image_url2, product.image2, product_name=product.name, row_num=i)
+                            if warn:
+                                warnings.append(warn)
                             
                         image_url3 = (row.get("image_url3") or "").strip()
                         if image_url3:
-                            _upload_image_from_url(image_url3, product.image3)
+                            ok, warn = _upload_image_from_url(image_url3, product.image3, product_name=product.name, row_num=i)
+                            if warn:
+                                warnings.append(warn)
                             
                         image_url4 = (row.get("image_url4") or "").strip()
                         if image_url4:
-                            _upload_image_from_url(image_url4, product.image4)
+                            ok, warn = _upload_image_from_url(image_url4, product.image4, product_name=product.name, row_num=i)
+                            if warn:
+                                warnings.append(warn)
                             
                         product.stock = stock
                         
@@ -579,11 +686,16 @@ def product_bulk_import(request):
                 errors.append(f"Fatal error parsing CSV: {str(e)}")
                 
         if not errors:
-            messages.success(request, f"Import complete: {created_count} products added, {updated_count} products updated.")
-            return redirect("product_manage_list")
+            msg = f"Import complete: {created_count} products added, {updated_count} products updated."
+            if warnings:
+                messages.warning(request, f"{msg} (Note: {len(warnings)} image quality warning(s) flagged below).")
+            else:
+                messages.success(request, msg)
+                return redirect("product_manage_list")
             
     return render(request, "store/product_import.html", {
         "created_count": created_count,
         "updated_count": updated_count,
         "errors": errors,
+        "warnings": warnings,
     })
