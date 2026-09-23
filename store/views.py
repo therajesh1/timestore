@@ -654,6 +654,29 @@ def product_bulk_import(request):
                     # Pre-load Brands and SubBrands into cache
                     brands_cache = {b.name.strip().lower(): b for b in Brand.objects.all()}
                     sub_brands_cache = {(sb.brand_id, sb.name.strip().lower()): sb for sb in SubBrand.objects.all()}
+
+                    # Pre-resolve all brands/sub-brands from the CSV rows BEFORE the atomic block.
+                    # get_or_create inside an atomic block creates a savepoint; if ANY subsequent
+                    # operation in that block raises, the entire transaction is killed and Django
+                    # returns a 500 Internal Server Error instead of gracefully catching the error.
+                    all_rows = list(reader)  # Read all rows into memory first
+                    for _row in all_rows:
+                        _brand_name = (_row.get("brand") or "").strip()
+                        if _brand_name:
+                            _b_key = _brand_name[:60].strip().lower()
+                            if _b_key not in brands_cache:
+                                _brand_obj, _ = Brand.objects.get_or_create(name=_brand_name[:60].strip())
+                                brands_cache[_b_key] = _brand_obj
+                        _sub_brand_name = (_row.get("sub_brand") or "").strip()
+                        _brand_obj_pre = brands_cache.get(_brand_name[:60].strip().lower() if _brand_name else "")
+                        if _sub_brand_name and _brand_obj_pre:
+                            _sb_key = (_brand_obj_pre.pk, _sub_brand_name[:60].strip().lower())
+                            if _sb_key not in sub_brands_cache:
+                                _sb_obj, _ = SubBrand.objects.get_or_create(
+                                    brand=_brand_obj_pre,
+                                    name=_sub_brand_name[:60].strip()
+                                )
+                                sub_brands_cache[_sb_key] = _sb_obj
                     
                     # Track products touched in THIS import session to detect intra-CSV duplicates
                     touched_in_csv = set()
@@ -667,37 +690,22 @@ def product_bulk_import(request):
                         return u
 
                     with transaction.atomic():
-                        for i, row in enumerate(reader, start=2):
+                        for i, row in enumerate(all_rows, start=2):
                             try:
                                 row_ref = (row.get("ref") or row.get("Ref") or row.get("Product ID") or "").strip()
                                 model_val = (row.get("model_number") or row.get("Model") or row.get("model") or row.get("SKU") or row.get("sku") or "").strip()[:100]
                                 ean_val = (row.get("ean_code") or row.get("ean") or row.get("EAN") or row.get("barcode") or "").strip()[:50]
                                 name_val = (row.get("name") or row.get("Name") or row.get("product_name") or row.get("Title") or "").strip()[:255]
                                 
-                                # Resolve Brand
+                                # Resolve Brand from pre-populated cache
                                 brand_name = (row.get("brand") or "").strip()
-                                brand_obj = None
-                                if brand_name:
-                                    b_key = brand_name[:60].strip().lower()
-                                    if b_key not in brands_cache:
-                                        brand_obj, _ = Brand.objects.get_or_create(name=brand_name[:60].strip())
-                                        brands_cache[b_key] = brand_obj
-                                    else:
-                                        brand_obj = brands_cache[b_key]
+                                brand_obj = brands_cache.get(brand_name[:60].strip().lower()) if brand_name else None
                                 
-                                # Resolve SubBrand
+                                # Resolve SubBrand from pre-populated cache
                                 sub_brand_name = (row.get("sub_brand") or "").strip()
                                 sub_brand_obj = None
                                 if sub_brand_name and brand_obj:
-                                    sb_key = (brand_obj.pk, sub_brand_name[:60].strip().lower())
-                                    if sb_key not in sub_brands_cache:
-                                        sub_brand_obj, _ = SubBrand.objects.get_or_create(
-                                            brand=brand_obj,
-                                            name=sub_brand_name[:60].strip()
-                                        )
-                                        sub_brands_cache[sb_key] = sub_brand_obj
-                                    else:
-                                        sub_brand_obj = sub_brands_cache[sb_key]
+                                    sub_brand_obj = sub_brands_cache.get((brand_obj.pk, sub_brand_name[:60].strip().lower()))
 
                                 # Multi-tier deduplication matching
                                 product = None
@@ -768,7 +776,14 @@ def product_bulk_import(request):
                                             curr_ref_counter += 1
                                         new_ref = str(curr_ref_counter)
                                         curr_ref_counter += 1
-                                    product = Product(ref=new_ref, category=category)
+                                    # Set required fields with safe defaults on new instances
+                                    # so product.save() never hits a NOT NULL constraint error
+                                    product = Product(
+                                        ref=new_ref,
+                                        category=category,
+                                        price=mrp if mrp > 0 else price,
+                                        mrp=mrp,
+                                    )
                                 else:
                                     if product.pk and product.pk in touched_in_csv:
                                         merged_count += 1
