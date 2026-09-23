@@ -12,6 +12,7 @@ from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import login as auth_login
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
 from django.db.models import Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
@@ -561,6 +562,16 @@ def _background_cache_images(products_to_sync):
             close_old_connections()
 
 
+def _is_valid_barcode(code):
+    if not code:
+        return False
+    s = str(code).strip()
+    if "e+" in s.lower() or "e-" in s.lower() or s.lower() in ["-", "n/a", "none", "null", "not found"]:
+        return False
+    digits_only = re.sub(r"\D", "", s)
+    return len(digits_only) >= 6
+
+
 @staff_member_required
 def download_import_template(request):
     response = HttpResponse(content_type="text/csv")
@@ -568,14 +579,14 @@ def download_import_template(request):
     
     writer = csv.writer(response)
     writer.writerow([
-        "ean_code", "brand", "sub_brand", "category",
+        "ean_code", "model_number", "brand", "sub_brand", "category",
         "mrp", "price", "stock", "description", "colour", "collection",
         "movement", "warranty_period", "glass_material", "strap_material",
         "strap_color", "dial_color", "case_material", "case_size",
         "gender", "features", "image_url", "image_url2", "image_url3", "image_url4", "gst_percent", "hsn_code", "min_qty"
     ])
     writer.writerow([
-        "", "Casio", "Edifice", "Wrist Watch",
+        "", "EQB-1000D-1A", "Casio", "Edifice", "Wrist Watch",
         "15995", "15995", "10", "A hand-finished chronograph watch.", "Black", "Edifice",
         "Quartz", "2 Years", "Mineral Glass", "Stainless Steel",
         "Black", "Black", "Stainless Steel", "43mm",
@@ -588,6 +599,7 @@ def download_import_template(request):
 def product_bulk_import(request):
     created_count = 0
     updated_count = 0
+    merged_count = 0
     errors = []
     warnings = []
     products_to_sync = []
@@ -610,156 +622,284 @@ def product_bulk_import(request):
                 
                 if not reader.fieldnames:
                     errors.append("The CSV file has no headers.")
-                brands_cache = {}
-                sub_brands_cache = {}
+                else:
+                    # 1. Pre-fetch existing catalog and brands into memory for ultra-fast matching
+                    existing_products = list(Product.objects.all())
+                    
+                    by_ref = {}
+                    by_model = {}
+                    by_brand_and_model = {}
+                    by_ean = {}
+                    by_name = {}
+                    
+                    max_numeric_ref = 0
+                    for p in existing_products:
+                        if p.ref:
+                            ref_str = p.ref.strip().lower()
+                            by_ref[ref_str] = p
+                            if p.ref.isdigit():
+                                max_numeric_ref = max(max_numeric_ref, int(p.ref))
+                        if p.model_number:
+                            m_norm = p.model_number.strip().lower()
+                            by_model[m_norm] = p
+                            if p.brand_id:
+                                by_brand_and_model[(p.brand_id, m_norm)] = p
+                        if _is_valid_barcode(p.ean_code):
+                            by_ean[p.ean_code.strip().lower()] = p
+                        if p.name:
+                            by_name[p.name.strip().lower()] = p
+                    
+                    curr_ref_counter = max_numeric_ref + 1
+                    
+                    # Pre-load Brands and SubBrands into cache
+                    brands_cache = {b.name.strip().lower(): b for b in Brand.objects.all()}
+                    sub_brands_cache = {(sb.brand_id, sb.name.strip().lower()): sb for sb in SubBrand.objects.all()}
+                    
+                    # Track products touched in THIS import session to detect intra-CSV duplicates
+                    touched_in_csv = set()
 
-                for i, row in enumerate(reader, start=2):
-                    try:
-                        ref = (row.get("ref") or "").strip()
-                        if not ref:
-                            ref = _next_product_ref()
-                        
-                        brand_name = (row.get("brand") or "").strip()
-                        brand_obj = None
-                        if brand_name:
-                            b_key = brand_name[:60]
-                            if b_key not in brands_cache:
-                                brands_cache[b_key], _ = Brand.objects.get_or_create(name=b_key)
-                            brand_obj = brands_cache[b_key]
-                            
-                        sub_brand_name = (row.get("sub_brand") or "").strip()
-                        sub_brand_obj = None
-                        if sub_brand_name and brand_obj:
-                            sb_key = (brand_obj.pk, sub_brand_name[:60])
-                            if sb_key not in sub_brands_cache:
-                                sub_brands_cache[sb_key], _ = SubBrand.objects.get_or_create(brand=brand_obj, name=sub_brand_name[:60])
-                            sub_brand_obj = sub_brands_cache[sb_key]
-                        
-                        category_raw = (row.get("category") or "").strip().lower()
-                        category = Product.Category.WRIST_WATCH
-                        for choice_val, choice_label in Product.Category.choices:
-                            if category_raw == choice_val.lower():
-                                category = choice_val
-                                break
-                        
-                        try:
-                            mrp = Decimal((row.get("mrp") or "0").strip() or "0")
-                        except Exception:
-                            mrp = Decimal("0")
-                            
-                        try:
-                            price = Decimal((row.get("price") or "0").strip() or "0")
-                        except Exception:
-                            price = Decimal("0")
-                            
-                        if price == 0 and mrp > 0:
-                            price = mrp
-                            
-                        try:
-                            stock = int((row.get("stock") or "5").strip() or "5")
-                        except Exception:
-                            stock = 5
-                            
-                        try:
-                            min_qty = int((row.get("min_qty") or "1").strip() or "1")
-                        except Exception:
-                            min_qty = 1
-                            
-                        gst_percent = (row.get("gst_percent") or "18").strip()
-                        if gst_percent not in [choice[0] for choice in Product.GST.choices]:
-                            gst_percent = Product.GST.EIGHTEEN
-                            
-                        product, created = Product.objects.get_or_create(
-                            ref=ref[:50],
-                            defaults={"category": category}
-                        )
-                        
-                        model_val = (row.get("model_number") or row.get("Model") or row.get("model") or "").strip()[:100]
-                        colour_val = (row.get("colour") or row.get("color") or row.get("Colour") or row.get("Color") or "").strip()[:120]
-                        
-                        product.name = (row.get("name") or "").strip()[:255] or f"Product {ref}"
-                        product.category = category
-                        product.ean_code = (row.get("ean_code") or "").strip()[:50]
-                        product.model_number = model_val
-                        product.tts_model = (row.get("tts_model") or "").strip()[:100]
-                        product.brand = brand_obj
-                        product.sub_brand = sub_brand_obj
-                        product.product_type = (row.get("product_type") or "").strip()[:100]
-                        product.colour = colour_val
-                        product.collection = (row.get("collection") or "").strip()[:100]
-                        product.warranty_period = (row.get("warranty_period") or "").strip()[:120]
-                        product.glass_material = (row.get("glass_material") or "").strip()[:120]
-                        product.strap_material = (row.get("strap_material") or "").strip()[:120]
-                        product.movement = (row.get("movement") or "").strip()[:120]
-                        product.strap_color = (row.get("strap_color") or "").strip()[:120]
-                        product.dial_color = (row.get("dial_color") or "").strip()[:120]
-                        product.case_material = (row.get("case_material") or "").strip()[:120]
-                        product.case_size = (row.get("case_size") or "").strip()[:160]
-                        
-                        gender_val = (row.get("gender") or row.get("Gender") or "").strip().lower()
-                        if gender_val in ["men", "man", "male"]:
-                            product.gender = "Men"
-                        elif gender_val in ["women", "woman", "female", "ladies"]:
-                            product.gender = "Women"
-                        else:
-                            product.gender = "Unisex"
-                            
-                        product.features = (row.get("features") or "").strip()
-                        product.mrp = mrp
-                        product.price = price
-                        product.gst_percent = gst_percent
-                        product.hsn_code = (row.get("hsn_code") or "").strip() or "9101"
-                        product.min_qty = min_qty
-                        product.description = (row.get("description") or "").strip()
-                        product.remark = (row.get("remark") or "").strip()
-                        
-                        image_url = (row.get("image_url") or "").strip()
-                        if image_url:
-                            product.image_url = upgrade_image_url(image_url)
-                            if "encrypted-tbn0.gstatic.com" in image_url:
-                                warnings.append(
-                                    f"Row {i} ({product.name}): Google thumbnail preview URL detected. "
-                                    f"Google thumbnails are low resolution (~300px). For best quality, use direct retailer or brand product image URLs."
-                                )
-                            
-                        image_url2 = (row.get("image_url2") or "").strip()
-                        if image_url2:
-                            product.image_url2 = upgrade_image_url(image_url2)
-                            
-                        image_url3 = (row.get("image_url3") or "").strip()
-                        if image_url3:
-                            product.image_url3 = upgrade_image_url(image_url3)
-                            
-                        image_url4 = (row.get("image_url4") or "").strip()
-                        if image_url4:
-                            product.image_url4 = upgrade_image_url(image_url4)
-                            
-                        product.stock = stock
-                        
-                        featured_val = (row.get("featured") or "").strip().lower()
-                        product.featured = featured_val in ["true", "yes", "1", "t"]
-                        
-                        product.save()
-                        
-                        if image_url or image_url2 or image_url3 or image_url4:
-                            products_to_sync.append((
-                                product.pk,
-                                product.image_url,
-                                product.image_url2,
-                                product.image_url3,
-                                product.image_url4,
-                            ))
-                        
-                        if created:
-                            created_count += 1
-                        else:
-                            updated_count += 1
-                    except Exception as row_err:
-                        errors.append(f"Row {i} (ref: {row.get('ref', '')}): {str(row_err)}")
+                    def _clean_img_url(url_val):
+                        if not url_val:
+                            return ""
+                        u = url_val.strip()
+                        if u.upper() in ["NOT FOUND", "N/A", "NONE", "-"]:
+                            return ""
+                        return u
+
+                    with transaction.atomic():
+                        for i, row in enumerate(reader, start=2):
+                            try:
+                                row_ref = (row.get("ref") or row.get("Ref") or row.get("Product ID") or "").strip()
+                                model_val = (row.get("model_number") or row.get("Model") or row.get("model") or row.get("SKU") or row.get("sku") or "").strip()[:100]
+                                ean_val = (row.get("ean_code") or row.get("ean") or row.get("EAN") or row.get("barcode") or "").strip()[:50]
+                                name_val = (row.get("name") or row.get("Name") or row.get("product_name") or row.get("Title") or "").strip()[:255]
+                                
+                                # Resolve Brand
+                                brand_name = (row.get("brand") or "").strip()
+                                brand_obj = None
+                                if brand_name:
+                                    b_key = brand_name[:60].strip().lower()
+                                    if b_key not in brands_cache:
+                                        brand_obj, _ = Brand.objects.get_or_create(name=brand_name[:60].strip())
+                                        brands_cache[b_key] = brand_obj
+                                    else:
+                                        brand_obj = brands_cache[b_key]
+                                
+                                # Resolve SubBrand
+                                sub_brand_name = (row.get("sub_brand") or "").strip()
+                                sub_brand_obj = None
+                                if sub_brand_name and brand_obj:
+                                    sb_key = (brand_obj.pk, sub_brand_name[:60].strip().lower())
+                                    if sb_key not in sub_brands_cache:
+                                        sub_brand_obj, _ = SubBrand.objects.get_or_create(
+                                            brand=brand_obj,
+                                            name=sub_brand_name[:60].strip()
+                                        )
+                                        sub_brands_cache[sb_key] = sub_brand_obj
+                                    else:
+                                        sub_brand_obj = sub_brands_cache[sb_key]
+
+                                # Multi-tier deduplication matching
+                                product = None
+                                
+                                # Tier 1: Matching by ref
+                                if row_ref and row_ref.lower() in by_ref:
+                                    product = by_ref[row_ref.lower()]
+                                    
+                                # Tier 2: Matching by model_number
+                                elif model_val:
+                                    m_key = model_val.strip().lower()
+                                    if brand_obj and (brand_obj.pk, m_key) in by_brand_and_model:
+                                        product = by_brand_and_model[(brand_obj.pk, m_key)]
+                                    elif m_key in by_model:
+                                        product = by_model[m_key]
+                                
+                                # Tier 3: Matching by valid EAN barcode
+                                elif _is_valid_barcode(ean_val) and ean_val.strip().lower() in by_ean:
+                                    product = by_ean[ean_val.strip().lower()]
+                                    
+                                # Tier 4: Matching by product name
+                                elif name_val and name_val.strip().lower() in by_name:
+                                    product = by_name[name_val.strip().lower()]
+
+                                # Category parsing
+                                category_raw = (row.get("category") or "").strip().lower()
+                                category = Product.Category.WRIST_WATCH
+                                for choice_val, choice_label in Product.Category.choices:
+                                    if category_raw == choice_val.lower():
+                                        category = choice_val
+                                        break
+
+                                # Pricing & stock parsing
+                                try:
+                                    mrp = Decimal((row.get("mrp") or "0").strip() or "0")
+                                except Exception:
+                                    mrp = Decimal("0")
+                                    
+                                try:
+                                    price = Decimal((row.get("price") or "0").strip() or "0")
+                                except Exception:
+                                    price = Decimal("0")
+                                    
+                                if price == 0 and mrp > 0:
+                                    price = mrp
+                                    
+                                try:
+                                    stock = int((row.get("stock") or "5").strip() or "5")
+                                except Exception:
+                                    stock = 5
+                                    
+                                try:
+                                    min_qty = int((row.get("min_qty") or "1").strip() or "1")
+                                except Exception:
+                                    min_qty = 1
+                                    
+                                gst_percent = (row.get("gst_percent") or "18").strip()
+                                if gst_percent not in [choice[0] for choice in Product.GST.choices]:
+                                    gst_percent = Product.GST.EIGHTEEN
+
+                                is_new = False
+                                if product is None:
+                                    is_new = True
+                                    if row_ref:
+                                        new_ref = row_ref[:50]
+                                    else:
+                                        while str(curr_ref_counter).lower() in by_ref:
+                                            curr_ref_counter += 1
+                                        new_ref = str(curr_ref_counter)
+                                        curr_ref_counter += 1
+                                    product = Product(ref=new_ref, category=category)
+                                else:
+                                    if product.pk and product.pk in touched_in_csv:
+                                        merged_count += 1
+                                    else:
+                                        updated_count += 1
+
+                                colour_val = (row.get("colour") or row.get("color") or row.get("Colour") or row.get("Color") or "").strip()[:120]
+
+                                if name_val:
+                                    product.name = name_val
+                                elif is_new and not product.name:
+                                    product.name = f"Product {product.ref}"
+
+                                product.category = category
+                                if _is_valid_barcode(ean_val):
+                                    product.ean_code = ean_val
+                                if model_val:
+                                    product.model_number = model_val
+                                if row.get("tts_model"):
+                                    product.tts_model = row.get("tts_model").strip()[:100]
+                                if brand_obj:
+                                    product.brand = brand_obj
+                                if sub_brand_obj:
+                                    product.sub_brand = sub_brand_obj
+                                if row.get("product_type"):
+                                    product.product_type = row.get("product_type").strip()[:100]
+                                if colour_val:
+                                    product.colour = colour_val
+                                if row.get("collection"):
+                                    product.collection = row.get("collection").strip()[:100]
+                                if row.get("warranty_period"):
+                                    product.warranty_period = row.get("warranty_period").strip()[:120]
+                                if row.get("glass_material"):
+                                    product.glass_material = row.get("glass_material").strip()[:120]
+                                if row.get("strap_material"):
+                                    product.strap_material = row.get("strap_material").strip()[:120]
+                                if row.get("movement"):
+                                    product.movement = row.get("movement").strip()[:120]
+                                if row.get("strap_color"):
+                                    product.strap_color = row.get("strap_color").strip()[:120]
+                                if row.get("dial_color"):
+                                    product.dial_color = row.get("dial_color").strip()[:120]
+                                if row.get("case_material"):
+                                    product.case_material = row.get("case_material").strip()[:120]
+                                if row.get("case_size"):
+                                    product.case_size = row.get("case_size").strip()[:160]
+
+                                gender_val = (row.get("gender") or row.get("Gender") or "").strip().lower()
+                                if gender_val in ["men", "man", "male"]:
+                                    product.gender = "Men"
+                                elif gender_val in ["women", "woman", "female", "ladies"]:
+                                    product.gender = "Women"
+                                elif gender_val:
+                                    product.gender = "Unisex"
+
+                                if row.get("features"):
+                                    product.features = row.get("features").strip()
+                                if mrp > 0:
+                                    product.mrp = mrp
+                                if price > 0:
+                                    product.price = price
+                                product.gst_percent = gst_percent
+                                if row.get("hsn_code"):
+                                    product.hsn_code = row.get("hsn_code").strip()
+                                product.min_qty = min_qty
+                                if row.get("description"):
+                                    product.description = row.get("description").strip()
+                                if row.get("remark"):
+                                    product.remark = row.get("remark").strip()
+
+                                image_url = _clean_img_url(row.get("image_url"))
+                                if image_url:
+                                    product.image_url = upgrade_image_url(image_url)
+                                    if "encrypted-tbn0.gstatic.com" in image_url:
+                                        warnings.append(
+                                            f"Row {i} ({product.name}): Google thumbnail preview URL detected. "
+                                            f"Google thumbnails are low resolution (~300px). For best quality, use direct retailer or brand product image URLs."
+                                        )
+
+                                image_url2 = _clean_img_url(row.get("image_url2"))
+                                if image_url2:
+                                    product.image_url2 = upgrade_image_url(image_url2)
+
+                                image_url3 = _clean_img_url(row.get("image_url3"))
+                                if image_url3:
+                                    product.image_url3 = upgrade_image_url(image_url3)
+
+                                image_url4 = _clean_img_url(row.get("image_url4"))
+                                if image_url4:
+                                    product.image_url4 = upgrade_image_url(image_url4)
+
+                                product.stock = stock
+
+                                featured_val = (row.get("featured") or "").strip().lower()
+                                if featured_val:
+                                    product.featured = featured_val in ["true", "yes", "1", "t"]
+
+                                product.save()
+
+                                if is_new:
+                                    created_count += 1
+
+                                if product.pk:
+                                    touched_in_csv.add(product.pk)
+                                by_ref[product.ref.strip().lower()] = product
+                                if product.model_number:
+                                    m_norm = product.model_number.strip().lower()
+                                    by_model[m_norm] = product
+                                    if product.brand_id:
+                                        by_brand_and_model[(product.brand_id, m_norm)] = product
+                                if _is_valid_barcode(product.ean_code):
+                                    by_ean[product.ean_code.strip().lower()] = product
+                                if product.name:
+                                    by_name[product.name.strip().lower()] = product
+
+                                if product.image_url or product.image_url2 or product.image_url3 or product.image_url4:
+                                    products_to_sync.append((
+                                        product.pk,
+                                        product.image_url,
+                                        product.image_url2,
+                                        product.image_url3,
+                                        product.image_url4,
+                                    ))
+
+                            except Exception as row_err:
+                                errors.append(f"Row {i} (model: {row.get('model_number') or row.get('Model') or ''}): {str(row_err)}")
+
             except Exception as e:
                 errors.append(f"Fatal error parsing CSV: {str(e)}")
                 
-        if created_count > 0 or updated_count > 0:
+        if created_count > 0 or updated_count > 0 or merged_count > 0:
             if products_to_sync:
                 threading.Thread(
                     target=_background_cache_images,
@@ -767,7 +907,15 @@ def product_bulk_import(request):
                     daemon=True
                 ).start()
                 
-            msg = f"Import complete: {created_count} products added, {updated_count} products updated."
+            parts = []
+            if created_count > 0:
+                parts.append(f"{created_count} products added")
+            if updated_count > 0:
+                parts.append(f"{updated_count} products updated")
+            if merged_count > 0:
+                parts.append(f"{merged_count} duplicate CSV rows merged")
+            msg = f"Import complete: {', '.join(parts)}."
+
             if errors:
                 messages.warning(request, f"{msg} (Note: {len(errors)} row error(s) flagged below).")
             elif warnings:
@@ -779,6 +927,7 @@ def product_bulk_import(request):
     return render(request, "store/product_import.html", {
         "created_count": created_count,
         "updated_count": updated_count,
+        "merged_count": merged_count,
         "errors": errors,
         "warnings": warnings,
     })
