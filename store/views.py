@@ -697,28 +697,39 @@ def product_bulk_import(request):
                     
                     curr_ref_counter = max_numeric_ref + 1
                     
-                    # Pre-load Brands and SubBrands into cache
+                    # Pre-load Brands and SubBrands into cache (keyed by lowercase name for case-insensitive lookup)
                     brands_cache = {b.name.strip().lower(): b for b in Brand.objects.all()}
                     sub_brands_cache = {(sb.brand_id, sb.name.strip().lower()): sb for sb in SubBrand.objects.all()}
 
-                    # Pre-resolve all brands/sub-brands from the CSV rows outside atomic block
+                    # Pre-resolve all brands/sub-brands from the CSV rows outside atomic block.
+                    # Uses case-insensitive filter().first() before get_or_create to prevent creating
+                    # duplicate brands/sub-brands that differ only in casing (e.g. 'Sheen' vs 'SHEEN').
                     all_rows = list(reader)
                     for _row in all_rows:
                         _brand_name = (_row.get("brand") or "").strip()
                         if _brand_name:
                             _b_key = _brand_name[:60].strip().lower()
                             if _b_key not in brands_cache:
-                                _brand_obj, _ = Brand.objects.get_or_create(name=_brand_name[:60].strip())
+                                # Case-insensitive lookup first to avoid creating duplicates
+                                _brand_obj = Brand.objects.filter(name__iexact=_brand_name[:60].strip()).first()
+                                if not _brand_obj:
+                                    _brand_obj = Brand.objects.create(name=_brand_name[:60].strip())
                                 brands_cache[_b_key] = _brand_obj
                         _sub_brand_name = (_row.get("sub_brand") or "").strip()
                         _brand_obj_pre = brands_cache.get(_brand_name[:60].strip().lower() if _brand_name else "")
                         if _sub_brand_name and _brand_obj_pre:
                             _sb_key = (_brand_obj_pre.pk, _sub_brand_name[:60].strip().lower())
                             if _sb_key not in sub_brands_cache:
-                                _sb_obj, _ = SubBrand.objects.get_or_create(
+                                # Case-insensitive lookup to match 'Sheen', 'SHEEN', 'sheen' etc. as the same sub-brand
+                                _sb_obj = SubBrand.objects.filter(
                                     brand=_brand_obj_pre,
-                                    name=_sub_brand_name[:60].strip()
-                                )
+                                    name__iexact=_sub_brand_name[:60].strip()
+                                ).first()
+                                if not _sb_obj:
+                                    _sb_obj = SubBrand.objects.create(
+                                        brand=_brand_obj_pre,
+                                        name=_sub_brand_name[:60].strip()
+                                    )
                                 sub_brands_cache[_sb_key] = _sb_obj
 
                     to_create_list = []
