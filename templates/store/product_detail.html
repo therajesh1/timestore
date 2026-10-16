@@ -18,7 +18,7 @@
       {% endif %}
     </div>
     <div>
-      <p class="mono" style="font-size:9px; letter-spacing:0.3em; text-transform:uppercase; color:var(--muted-foreground);">{{ product.brand.name|default:"Atelier" }} · {{ product.ref }}</p>
+      <p class="mono" style="font-size:9px; letter-spacing:0.3em; text-transform:uppercase; color:var(--muted-foreground);">{{ product.brand.name|default:"Atelier" }}</p>
       <h1 id="product-title" data-default-name="{{ product.name }}" data-default-color="{{ product.colour }}" style="font-size: 2.75rem; margin: 0.75rem 0 1.25rem;">{{ product.name }}</h1>
       <p class="mono" style="font-size:1.5rem; color: var(--accent); margin-bottom: 1.5rem;">{{ product.formatted_price }}</p>
 

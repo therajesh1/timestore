@@ -346,7 +346,7 @@
                 </div>
               </div>
               <div>
-                <p class="mono" style="font-size:9px; letter-spacing:0.3em; text-transform:uppercase; color:var(--muted-foreground);" id="prev-detail-ref-brand">BRAND · REF</p>
+                <p class="mono" style="font-size:9px; letter-spacing:0.3em; text-transform:uppercase; color:var(--muted-foreground);" id="prev-detail-ref-brand">BRAND</p>
                 <h1 style="font-size: 2.5rem; margin: 0.5rem 0 1rem; font-family: 'DM Serif Display', serif; font-weight: 400;" id="prev-detail-name">Product Name</h1>
                 <p class="mono" style="font-size:1.5rem; color: var(--accent); margin-bottom: 1.5rem; font-weight: 600;" id="prev-detail-price">₹0</p>
                 
@@ -469,7 +469,7 @@
         document.getElementById("prev-card-price").textContent = formattedPrice;
 
         // Update Detail Preview
-        document.getElementById("prev-detail-ref-brand").textContent = brandName + " · PREVIEW";
+        document.getElementById("prev-detail-ref-brand").textContent = brandName;
         document.getElementById("prev-detail-name").textContent = name;
         document.getElementById("prev-detail-price").textContent = formattedPrice;
         document.getElementById("prev-detail-desc").textContent = desc || "No description provided.";

@@ -8,7 +8,7 @@
   {% if cart|length > 0 %}
     <table class="data-table">
       <thead>
-        <tr><th>Item</th><th>Reference</th><th>Price</th><th>Qty</th><th>Total</th><th></th></tr>
+        <tr><th>Item</th><th>Price</th><th>Qty</th><th>Total</th><th></th></tr>
       </thead>
       <tbody>
         {% for item in cart %}
@@ -17,7 +17,6 @@
               <img src="{{ item.product.display_image }}" alt="{{ item.product.name }}" style="width:56px; height:70px; object-fit:cover;" />
               <a href="{% url 'product_detail' item.product.pk %}">{{ item.product.name }}</a>
             </td>
-            <td class="mono">{{ item.product.ref }}</td>
             <td class="mono">{{ item.product.formatted_price }}</td>
             <td>{{ item.quantity }}</td>
             <td class="mono">₹{{ item.line_total|floatformat:0 }}</td>
