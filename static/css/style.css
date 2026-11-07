@@ -172,15 +172,35 @@ a { color: inherit; text-decoration: none; }
 .gender-tile .caption { position: absolute; bottom: 2.5rem; left: 2rem; color: #F7F4EF; }
 .gender-tile .caption h3 { font-size: 2.5rem; margin-bottom: 1rem; font-style: italic; }
 
-/* PRODUCT GRID */
-.filter-bar { display: flex; gap: 2rem; margin-bottom: 2.5rem; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
-.filter-bar a { padding-bottom: 1rem; font-size: 0.875rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted-foreground); border-bottom: 1px solid transparent; margin-bottom: -1px; }
+/* ── FILTER BAR ─────────────────────────────── */
+.filter-bar {
+  display: flex;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  gap: 0;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+.filter-bar::-webkit-scrollbar { display: none; }
+.filter-bar a {
+  flex-shrink: 0;
+  padding: 0.75rem 1.1rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  white-space: nowrap;
+}
 .filter-bar a.active { color: var(--primary); border-color: var(--accent); }
 
-/* Grid: 2 cols on mobile, 4 cols on desktop */
+/* ── PRODUCT GRID ────────────────────────────── */
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, 1fr); /* 2 col on mobile */
   gap: 1px;
   background: var(--border);
 }
@@ -188,71 +208,96 @@ a { color: inherit; text-decoration: none; }
   .product-grid { grid-template-columns: repeat(4, 1fr); }
 }
 
-/* Card shell */
+/* ── PRODUCT CARD ────────────────────────────── */
 .product-card {
   background: var(--card);
   display: flex;
   flex-direction: column;
+  min-width: 0; /* CRITICAL: prevents grid blowout on small screens */
 }
 
-/* Image container — ::before trick is the most reliable way to enforce square
-   ratio on ANY element (including <a> tags) across all mobile browsers */
+/* Square image container using ::before on the <a> thumb.
+   Works on <a>, <div>, any element, on every mobile browser. */
 .product-card .thumb {
   display: block;
   position: relative;
+  width: 100%;
   background: #EDE9E1;
   overflow: hidden;
+  flex-shrink: 0;
 }
 .product-card .thumb::before {
   content: '';
   display: block;
-  padding-top: 100%; /* 1:1 — always perfectly square */
+  padding-top: 100%; /* forces 1:1 square */
 }
 .product-card .thumb img {
   position: absolute;
-  inset: 0;
+  top: 0; left: 0; right: 0; bottom: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.5s;
+  transition: transform 0.5s ease;
   image-rendering: -webkit-optimize-contrast;
 }
 .product-card:hover .thumb img { transform: scale(1.05); }
 
 .product-card .ref {
-  position: absolute; top: 0.75rem; right: 0.75rem;
-  font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase;
-  background: rgba(247,244,239,0.85); color: var(--muted-foreground); padding: 3px 6px;
+  position: absolute; top: 0.5rem; right: 0.5rem;
+  font-size: 8px; letter-spacing: 0.25em; text-transform: uppercase;
+  background: rgba(247,244,239,0.9); color: var(--muted-foreground); padding: 2px 5px;
 }
 
-/* Info section always fills remaining card height */
+/* Info section */
 .product-card .info {
-  padding: 0.85rem;
+  padding: 0.6rem 0.65rem 0.7rem;
   border-top: 1px solid var(--border);
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  min-width: 0;
+  gap: 0.15rem;
 }
-.product-card .tagline { font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--muted-foreground); line-height: 1.4; }
-.product-card .name { font-size: 0.9rem; margin: 0; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-.product-card .price { color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; margin-top: auto; padding-top: 0.4rem; }
+.product-card .tagline {
+  display: none; /* hidden on mobile by default */
+  font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--muted-foreground); line-height: 1.3;
+}
+.product-card .name {
+  font-size: 0.75rem;
+  font-family: 'DM Serif Display', serif;
+  margin: 0.1rem 0 0;
+  line-height: 1.2;
+  color: var(--foreground);
+  min-width: 0;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.product-card .name a { color: inherit; text-decoration: none; }
+.product-card .price {
+  font-size: 0.72rem;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--accent);
+  margin-top: auto;
+  padding-top: 0.3rem;
+  white-space: nowrap;
+}
 
-/* Desktop: bigger info */
+/* Tablet (768px+) */
 @media (min-width: 768px) {
-  .product-card .info { padding: 1.25rem; gap: 0.3rem; }
-  .product-card .name { font-size: 1.1rem; }
-  .product-card .price { font-size: 0.9rem; }
+  .product-card .info { padding: 1rem 1.25rem 1.25rem; gap: 0.25rem; }
   .product-card .tagline { display: block; }
-}
-@media (min-width: 1024px) {
-  .product-card .info { padding: 1.5rem; }
-  .product-card .name { font-size: 1.2rem; }
+  .product-card .name { font-size: 1rem; -webkit-line-clamp: 2; }
+  .product-card .price { font-size: 0.85rem; }
 }
 
-/* Mobile: hide tagline to save space */
-@media (max-width: 767px) {
-  .product-card .tagline { display: none; }
+/* Desktop (1024px+) */
+@media (min-width: 1024px) {
+  .product-card .info { padding: 1.25rem 1.5rem 1.5rem; }
+  .product-card .name { font-size: 1.15rem; }
+  .product-card .price { font-size: 0.9rem; }
 }
 
 /* FORMS */
@@ -433,22 +478,6 @@ footer { border-top: 1px solid var(--border); margin-top: 4rem; }
   }
   .filter-bar::-webkit-scrollbar { display: none; }
   .filter-bar a { flex-shrink: 0; padding: 0.75rem 1rem; font-size: 0.75rem; }
-
-  /* PRODUCT GRID — single column on very small phones, 2-col otherwise */
-  .product-grid { grid-template-columns: repeat(2, 1fr); gap: 1px; }
-
-  /* PRODUCT CARD */
-  .product-card .info { padding: 0.6rem 0.75rem 0.75rem; }
-  .product-card .name {
-    font-size: 0.78rem;
-    margin: 0.15rem 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    line-height: 1.3;
-  }
-  .product-card .price { font-size: 0.75rem; }
-  .product-card .tagline { display: none; }
 
   /* GENDER TILES */
   .gender-tile { height: 260px; }
