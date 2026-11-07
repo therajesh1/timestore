@@ -81,7 +81,7 @@
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       var nav = document.querySelector(".nav");
-      var main = document.querySelector("main");
+      var main = document.getElementById("main-content");
 
       function syncMainPadding() {
         if (main && nav) {
@@ -101,12 +101,18 @@
         });
       }
 
-      window.addEventListener("resize", syncMainPadding);
+      window.addEventListener("resize", function() {
+        // Close menu on resize to desktop
+        if (window.innerWidth > 768 && navMenu) {
+          navMenu.classList.remove("open");
+        }
+        syncMainPadding();
+      });
       setTimeout(syncMainPadding, 50);
     });
   </script>
 
-  <main style="padding-top: 11.75rem;">
+  <main id="main-content" style="padding-top: 5rem;">
     <div class="container">
       {% if messages %}
         <ul class="messages">
